@@ -1,0 +1,50 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-requirements-txt", "hatch-vcs"]
+
+[project]
+dynamic = ["dependencies", "version"]
+description = "SwiftAgent: Building AI Agents At SCALE"
+keywords = ["llm", "agents", "interface"]
+license = {file = "LICENSE"}
+name = "swiftagent"
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+
+[tool.hatch.version]
+source = "vcs"
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+]
+
+[project.urls]
+Homepage = "https://github.com/BRama10/swiftagent"
+Repository = "https://github.com/BRama10/swiftagent.git"
+
+[tool.hatch.build]
+include = ["swiftagent"]
+exclude = [
+    "*.egg-info/",
+    "dist",
+    "__pycache__/",
+    ".pytest_cache/",
+    "examples/",
+    "examples/**",
+    "tests/",
+    "tests/**",
+    "guides/",
+    "guides/**"
+]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["swiftagent"]
+only-include = ["swiftagent"]
