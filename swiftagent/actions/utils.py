@@ -1,4 +1,14 @@
-from typing import get_type_hints, Union, get_origin, get_args, Callable, Dict, Any, Optional
+from typing import (
+    get_type_hints,
+    Union,
+    get_origin,
+    get_args,
+    Callable,
+    Dict,
+    Any,
+    Optional,
+)
+
 
 def python_type_to_json_type(py_type):
     """

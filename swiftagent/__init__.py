@@ -1,3 +1,1 @@
-from .application.base import (
-    SwiftAgent
-)
+from .application.base import SwiftAgent

@@ -1,7 +1,3 @@
-from .base import (
-    Action
-)
+from .base import Action
 
-from .formatter import (
-    ActionFormatter
-)
+from .formatter import ActionFormatter

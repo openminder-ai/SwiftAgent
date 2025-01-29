@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ApplicationType(Enum):
     STANDARD = 0
     PERSISTENT = 1
@@ -13,4 +14,3 @@ class ApplicationType(Enum):
 
     def is_standard(self) -> bool:
         return self == ApplicationType.STANDARD
-    
