@@ -9,23 +9,14 @@ class ApplicationType(Enum):
     def is_hosted(
         self,
     ) -> bool:
-        return (
-            self
-            == ApplicationType.HOSTED
-        )
+        return self == ApplicationType.HOSTED
 
     def is_persistent(
         self,
     ) -> bool:
-        return (
-            self
-            == ApplicationType.PERSISTENT
-        )
+        return self == ApplicationType.PERSISTENT
 
     def is_standard(
         self,
     ) -> bool:
-        return (
-            self
-            == ApplicationType.STANDARD
-        )
+        return self == ApplicationType.STANDARD

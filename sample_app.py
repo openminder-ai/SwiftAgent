@@ -19,15 +19,9 @@ import asyncio
 def another_thing(
     city: str,
 ) -> int:
-    if (
-        "london"
-        in city.lower()
-    ):
+    if "london" in city.lower():
         return 54
-    elif (
-        "herndon"
-        in city.lower()
-    ):
+    elif "herndon" in city.lower():
         return 14
     else:
         return 113
@@ -38,9 +32,7 @@ async def main():
     # What is the difference in temperatures in the cities of london and herndon
     # """))
 
-    await agent.run(
-        type_=ApplicationType.PERSISTENT
-    )
+    await agent.run(type_=ApplicationType.PERSISTENT)
 
 
 asyncio.run(main())

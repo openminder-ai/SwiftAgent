@@ -6,9 +6,7 @@ import asyncio
 
 
 async def main():
-    client = SwiftAgentClient(
-        agent_name="cow"
-    )
+    client = SwiftAgentClient(agent_name="cow")
 
     q = await client.process_query(
         "What is the difference in temperatures in the cities of london and herndon"
