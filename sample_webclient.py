@@ -8,14 +8,17 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class WebSocketClient:
     def __init__(self, uri: str, name: str):
         self.uri = uri
         self.name = name
-        self.websocket: Optional[websockets.WebSocketClientProtocol] = None
+        self.websocket: Optional[
+            websockets.WebSocketClientProtocol
+        ] = None
         self.connected = False
         self.message_handlers: Dict[str, Callable] = {}
-        
+
         # Register default message handlers
         self.register_handler("chat", self.handle_chat)
         self.register_handler("system", self.handle_system)
@@ -25,7 +28,9 @@ class WebSocketClient:
     def register_handler(self, message_type: str, handler: Callable):
         """Register a new message handler"""
         self.message_handlers[message_type] = handler
-        logger.info(f"Registered handler for message type: {message_type}")
+        logger.info(
+            f"Registered handler for message type: {message_type}"
+        )
 
     async def handle_chat(self, data: dict) -> None:
         """Handle chat messages"""
@@ -55,14 +60,13 @@ class WebSocketClient:
         """Send a message to the server"""
         if self.websocket and self.connected:
             try:
-                message = {
-                    "type": message_type,
-                    **data
-                }
+                message = {"type": message_type, **data}
                 await self.websocket.send(json.dumps(message))
             except websockets.ConnectionClosed:
                 self.connected = False
-                logger.warning("Connection lost while sending message")
+                logger.warning(
+                    "Connection lost while sending message"
+                )
 
     async def handle_message(self, message: str) -> None:
         """Route incoming messages to appropriate handlers"""
@@ -73,7 +77,9 @@ class WebSocketClient:
             if message_type in self.message_handlers:
                 await self.message_handlers[message_type](data)
             else:
-                logger.warning(f"Unknown message type: {message_type}")
+                logger.warning(
+                    f"Unknown message type: {message_type}"
+                )
 
         except json.JSONDecodeError:
             logger.error("Failed to parse message as JSON")
@@ -95,7 +101,9 @@ class WebSocketClient:
                         await self.handle_message(message)
 
             except websockets.ConnectionClosed:
-                logger.warning("Connection lost, attempting to reconnect...")
+                logger.warning(
+                    "Connection lost, attempting to reconnect..."
+                )
                 self.connected = False
                 await asyncio.sleep(5)  # Wait before reconnecting
             except Exception as e:
@@ -111,8 +119,10 @@ class WebSocketClient:
         while True:
             try:
                 # Get input from the user
-                message = await asyncio.get_event_loop().run_in_executor(
-                    None, input, ""
+                message = (
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, input, ""
+                    )
                 )
 
                 # Process commands
@@ -135,7 +145,9 @@ class WebSocketClient:
                 else:
                     # Send chat message
                     if message.strip():
-                        await self.send_message("chat", message=message)
+                        await self.send_message(
+                            "chat", message=message
+                        )
 
             except KeyboardInterrupt:
                 break
@@ -143,18 +155,20 @@ class WebSocketClient:
         # Cleanup
         connection_task.cancel()
 
+
 # Example usage
 async def main():
     client = WebSocketClient("ws://localhost:8765", "TestUser2")
-    
+
     # Register a custom message handler
     async def handle_custom_response(data):
         print(f"Received custom response: {data.get('data')}")
-    
+
     client.register_handler("custom_response", handle_custom_response)
-    
+
     # Start the client
     await client.start()
+
 
 if __name__ == "__main__":
     try:
