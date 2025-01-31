@@ -4,7 +4,9 @@ from swiftagent.client import SwiftAgentClient
 
 async def suite_client_demo():
     client = SwiftAgentClient(
-        host="localhost", port=8001, client_name="MyWsClient"  # the SwiftSuite port
+        host="localhost",
+        port=8001,
+        client_name="MyWsClient",  # the SwiftSuite port
     )
 
     await client.connect_ws()

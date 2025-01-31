@@ -3,3 +3,6 @@ starlette
 uvicorn
 websockets
 aiohttp
+fastembed
+langchain-text-splitters
+rich
