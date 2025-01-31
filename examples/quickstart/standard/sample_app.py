@@ -31,6 +31,9 @@ def action_test(
         return 113
 
 
+agent.add_resource()
+
+
 agent.add_action(action_test)
 
 

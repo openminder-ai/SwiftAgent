@@ -9,17 +9,16 @@ async def suite_client_demo():
         client_name="MyWsClient",  # the SwiftSuite port
     )
 
-    await client.connect_ws()
+    await client._connect_to_suite()
 
     # Suppose you have an agent named "Alice" in that suite
     ws_result = await client.process_query_ws(
         "cow",
         "What is the difference in temperatures in the cities of london and herndon!",
     )
-    print("WS result:", ws_result)
 
     # Cleanly close
-    await client.close_ws()
+    await client._close_connection_to_suite()
 
 
 asyncio.run(suite_client_demo())

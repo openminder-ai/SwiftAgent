@@ -6,10 +6,18 @@ from swiftagent.core.utilities import hash_url
 import websockets
 from websockets.legacy.server import WebSocketServerProtocol
 import asyncio
-from datetime import datetime
 from typing import Callable
 import json
-import uuid  # (NEW) for unique request IDs
+
+from rich.console import Console
+from rich.theme import Theme
+from rich.panel import Panel
+from rich import box
+from rich.live import Live
+from rich.table import Table
+import time
+
+from swiftagent.styling.defaults import suite_cli_default
 
 
 class SwiftSuite:
@@ -19,6 +27,11 @@ class SwiftSuite:
         description: str = "",
         agents: list[SwiftAgent] = [],
     ):
+
+        self.console = Console(theme=suite_cli_default)
+        # Just create a live display for dynamic lines
+        # self.live = Live("", console=self.console, refresh_per_second=4)
+        # self.live.start()
 
         self.heartbeat_interval = 30
 
@@ -46,7 +59,9 @@ class SwiftSuite:
         # (NEW) Register new client handlers
         self.register_handler("client_join", self.handle_client_join)
         self.register_handler("client_query", self.handle_client_query)
-        self.register_handler("agent_query_response", self.handle_agent_query_response)
+        self.register_handler(
+            "agent_query_response", self.handle_agent_query_response
+        )
 
     def register_handler(
         self,
@@ -66,12 +81,20 @@ class SwiftSuite:
         # Find an already constructed SwiftAgent with that name:
         agent_ = [a for a in self.agents_to_be_joined if a.name == name][0]
 
-        self.agents[websocket] = agent_
-        # agent_.websocket = websocket
-        # print('test connection', agent_.websocket)
+        ##ADD NEW AGENT HERE
 
+        # Show pending status
+        # Show pending status
+        # Show pending status
+        self.console.print(f"Agent{name}: [ ] Pending", end="\r")
+
+        await asyncio.sleep(0.5)
+
+        # Update to checkmark on same line and add newline at end
+        self.console.print(f"Agent {name}: [green][✓] Connected")
+
+        self.agents[websocket] = agent_
         agent_.last_pong = asyncio.get_event_loop().time()
-        print(f"Agent {name} joined as WebSocket connection.")
 
     # (NEW) --------------------- CLIENT HANDLERS ---------------------
     async def handle_client_join(
@@ -86,7 +109,13 @@ class SwiftSuite:
         """
         client_name = data.get("client_name", "AnonymousClient")
         self.clients[websocket] = client_name
-        print(f"Client {client_name} connected.")
+
+        self.console.print(f"Client {client_name}: [ ] Pending", end="\r")
+
+        await asyncio.sleep(0.5)
+
+        # Update to checkmark on same line and add newline at end
+        self.console.print(f"Client {client_name}: [green][✓] Connected")
 
     async def handle_client_query(
         self,
@@ -125,7 +154,10 @@ class SwiftSuite:
             # No agent with that name
             await websocket.send(
                 json.dumps(
-                    {"type": "error", "message": f"Agent '{agent_name}' not found"}
+                    {
+                        "type": "error",
+                        "message": f"Agent '{agent_name}' not found",
+                    }
                 )
             )
             return
@@ -143,9 +175,11 @@ class SwiftSuite:
                 }
             )
         )
-        print(
-            f"Client {client_name} asked agent '{agent_name}': {query}. "
-            f"Request ID = {request_id}"
+
+        self.console.print(
+            f"[bright_black][[/bright_black][cyan]{client_name}[/cyan][bright_black] →[/bright_black] "
+            f"[green]{agent_name}[/green][bright_black]][/bright_black] "
+            f"[white]{query}[/white]"
         )
 
     async def handle_agent_query_response(
@@ -178,8 +212,12 @@ class SwiftSuite:
                     }
                 )
             )
-            print(
-                f"Forwarded agent response to client. Request ID = {request_id}, result={result}"
+
+            # TODO: better query tracking
+            self.console.print(
+                f"[bright_black][[/bright_black][green]Agent[/green][bright_black] →[/bright_black] "
+                f"[cyan]Client[/cyan][bright_black]][/bright_black] "
+                f"[white]{result}[/white]"
             )
 
     # -----------------------------------------------------------------
@@ -192,11 +230,11 @@ class SwiftSuite:
         if websocket in self.agents:
             agent = self.agents[websocket]
             del self.agents[websocket]
-            print(f"Agent {agent.name} disconnected.")
+            # print(f"Agent {agent.name} disconnected.")
         elif websocket in self.clients:
             client_name = self.clients[websocket]
             del self.clients[websocket]
-            print(f"Client {client_name} disconnected.")
+            # print(f"Client {client_name} disconnected.")
 
     async def handle_pong(
         self,
@@ -218,9 +256,11 @@ class SwiftSuite:
 
                 if websocket in self.agents:
                     agent = self.agents[websocket]
-                    time_since_pong = asyncio.get_event_loop().time() - agent.last_pong
+                    time_since_pong = (
+                        asyncio.get_event_loop().time() - agent.last_pong
+                    )
                     if time_since_pong > self.heartbeat_interval * 1.5:
-                        print(f"Agent {agent.name} timed out.")
+                        # print(f"Agent {agent.name} timed out.")
                         await websocket.close(
                             code=1000,
                             reason="Heartbeat timeout",
@@ -270,7 +310,9 @@ class SwiftSuite:
     ) -> None:
         """Handle new WebSocket connections (both clients and agents)."""
         # Set up pong handler (only relevant for Agents that respond to pings)
-        websocket.pong_handler = lambda: asyncio.create_task(self.handle_pong(websocket))
+        websocket.pong_handler = lambda: asyncio.create_task(
+            self.handle_pong(websocket)
+        )
 
         # Start heartbeat for Agents
         heartbeat_task = asyncio.create_task(self.heartbeat(websocket))
@@ -294,9 +336,9 @@ class SwiftSuite:
         dead_agents = set()
         for agent in self.agents.values():
             try:
-                await agent.websocket.send(json.dumps(message))
+                await agent.suite_connection.send(json.dumps(message))
             except websockets.ConnectionClosed:
-                dead_agents.add(agent.websocket)
+                dead_agents.add(agent.suite_connection)
 
         # Cleanup dead agents
         for dead_ws in dead_agents:
@@ -310,14 +352,37 @@ class SwiftSuite:
         suite_url = f"{host}{port}"
         hashed_suite_url = hash_url(suite_url)
 
-        await websockets.serve(
-            self.connection_handler,
-            host,
-            port,
+        self.console.rule(
+            "[info]SwiftSuite Initialization", style="bright_blue"
         )
 
-        print(f"Server started on ws://{host}:{port}")
-        print(f"Hashed URL: {hashed_suite_url}")
+        with self.console.status(
+            "Initializing SwiftSuite", spinner="dots9", spinner_style="cyan"
+        ) as status:
+            await websockets.serve(
+                self.connection_handler,
+                host,
+                port,
+            )
+
+        self.console.print(
+            "[success]✓[/success] SwiftSuite Started Successfully"
+        )
+
+        code_panel = Panel(
+            f"✨ Suite Address: [code]{hashed_suite_url}[/code]",
+            box=box.ROUNDED,
+            style="bright_blue",
+            padding=(0, 2),
+        )
+        self.console.print(code_panel)
+
+        # Connection info in subtle styling
+        self.console.print(
+            f"[optional]Direct WS Connection: ws://{host}:{port}[/optional]"
+        )
+
+        self.console.rule("", style="bright_blue")
 
         # Launch all "to be joined" agents in Hosted mode
         for agent in self.agents_to_be_joined:

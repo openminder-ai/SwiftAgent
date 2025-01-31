@@ -1,26 +1,30 @@
 from swiftagent import (
     SwiftAgent,
 )
+
+from swiftagent.suite import SwiftSuite
+
 from swiftagent.application.types import (
     ApplicationType,
 )
-
-from swiftagent.actions.wrapper import action
 
 from pprint import (
     pprint,
 )
 
+
 agent = SwiftAgent(name="cow")
+
+suite = SwiftSuite(name="hi", agents=[agent])
 
 import asyncio
 
 
-@action(
+@agent.action(
     name="get_weather",
     description="gets weather for a city",
 )
-def action_test(
+def another_thing(
     city: str,
 ) -> int:
     if "london" in city.lower():
@@ -31,22 +35,13 @@ def action_test(
         return 113
 
 
-agent.add_resource()
-
-
-agent.add_action(action_test)
-
-
 async def main():
-    print(
-        await agent.run(
-            task="""
-    What is the difference in temperatures in the cities of london and herndon
-    """
-        )
-    )
+    # print(await agent.run(task="""
+    # What is the difference in temperatures in the cities of london and herndon
+    # """))
 
     # await agent.run(type_=ApplicationType.PERSISTENT)
+    await suite.setup(host="localhost", port=8001)
 
 
 asyncio.run(main())

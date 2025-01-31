@@ -26,7 +26,6 @@ class ActionFormatter:
         self,
         action: Action,
     ):
-        print(action)
         return f"Action Name: {action.name}\nAction Description: {action.description}"
 
     def format_actions(
@@ -34,7 +33,9 @@ class ActionFormatter:
         actions: list[Action],
     ):
         if len(actions) > 0:
-            return "\n\n".join([self.format_action(action) for action in actions])
+            return "\n\n".join(
+                [self.format_action(action) for action in actions]
+            )
         return "No Actions!"
 
     def format_action_for_llm_call(

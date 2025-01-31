@@ -1,52 +1,19 @@
 import asyncio
-from functools import (
-    wraps,
-)
-
+from functools import wraps
 from typing import Callable, Any, Optional, Type, overload
-
-from swiftagent.application.types import (
-    ApplicationType,
-)
-
-from swiftagent.actions.base import (
-    Action,
-)
-
-from swiftagent.reasoning.base import (
-    BaseReasoning,
-)
-
-from starlette.requests import (
-    Request,
-)
-from starlette.applications import (
-    Starlette,
-)
-from starlette.responses import (
-    JSONResponse,
-)
-from starlette.routing import (
-    Route,
-)
-
+from swiftagent.application.types import ApplicationType
+from swiftagent.actions.base import Action
+from swiftagent.reasoning.base import BaseReasoning
+from starlette.requests import Request
+from starlette.applications import Starlette
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 import uvicorn
-
 import logging
-from logging.handlers import (
-    RotatingFileHandler,
-)
-
-from swiftagent.core.utilities import (
-    hash_url,
-)
-
+from logging.handlers import RotatingFileHandler
+from swiftagent.core.utilities import hash_url
 import websockets
-
-from websockets.legacy.server import (
-    WebSocketServerProtocol,
-)
-
+from websockets.legacy.server import WebSocketServerProtocol
 import json
 
 
@@ -62,39 +29,23 @@ class SwiftAgent:
         self.description = description
 
         # Collections to store actions/resources
-        self._actions: dict[
-            str,
-            dict[
-                str,
-                Any,
-            ],
-        ] = {}
-
-        self._resources: dict[
-            str,
-            dict[
-                str,
-                Any,
-            ],
-        ] = {}
+        self._actions: dict[str, dict[str, Any]] = {}
+        self._resources: dict[str, dict[str, Any]] = {}
 
         self.reasoning = reasoning(name=self.name)
         self.llm_name = llm_name
 
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
-        self.websocket: Optional[WebSocketServerProtocol] = None
+        self.suite_connection: Optional[WebSocketServerProtocol] = None
 
         self.setup_logging()
 
-    def setup_logging(
-        self,
-        log_file="agent.log",
-    ):
+    def setup_logging(self, log_file="agent.log"):
         self.file_handler = RotatingFileHandler(
             log_file,
-            maxBytes=1024 * 1024,
-            backupCount=5,  # 1MB  # Keep 5 backup files
+            maxBytes=1024 * 1024,  # 1MB
+            backupCount=5,  # Keep 5 backup files
         )
 
         self.file_handler.setFormatter(
@@ -109,36 +60,16 @@ class SwiftAgent:
         self.logger.addHandler(self.file_handler)
         self.logger.setLevel(logging.INFO)  # Set desired log level
 
-    def _create_server(
-        self,
-    ):
-        """Create Starlette app with single process route"""
-        routes = [
-            Route(
-                f"/{self.name}",
-                self._process_persistent,
-                methods=["POST"],
-            )
-        ]
-        return Starlette(routes=routes)
-
     def action(
         self,
         name: str,
         description: Optional[str] = None,
-        params: Optional[
-            dict[
-                str,
-                str,
-            ]
-        ] = None,
+        params: Optional[dict[str, str]] = None,
         strict: bool = True,
     ):
         """Decorator to register an action with the agent."""
 
-        def decorator(
-            func: Callable,
-        ):
+        def decorator(func: Callable):
             action = Action(
                 func=func,
                 name=name,
@@ -147,10 +78,7 @@ class SwiftAgent:
                 strict=strict,
             )
 
-            self.add_action(
-                name,
-                action,
-            )
+            self.add_action(name, action)
 
             return action.wrapped_func
 
@@ -192,18 +120,10 @@ class SwiftAgent:
         parameter-introspection approach).
         """
 
-        def decorator(
-            func: Callable,
-        ):
+        def decorator(func: Callable):
             @wraps(func)
-            def wrapper(
-                *args,
-                **kwargs,
-            ):
-                return func(
-                    *args,
-                    **kwargs,
-                )
+            def wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
 
             # For now, just store in self._resources.
             # If you want the same signature-based JSON schema, you can do so.
@@ -211,11 +131,7 @@ class SwiftAgent:
                 "name": name,
                 "description": description or (func.__doc__ or ""),
             }
-            self.add_resource(
-                name,
-                wrapper,
-                resource_metadata,
-            )
+            self.add_resource(name, wrapper, resource_metadata)
             return wrapper
 
         return decorator
@@ -224,10 +140,7 @@ class SwiftAgent:
         self,
         name: str,
         func: Callable,
-        metadata: dict[
-            str,
-            Any,
-        ],
+        metadata: dict[str, Any],
     ):
         """
         Register the resource with this agent.
@@ -237,27 +150,38 @@ class SwiftAgent:
             "metadata": metadata,
         }
 
-    async def _process(
-        self,
-        query: str,
-    ):
+    ##############################
+    # Universal Agent Mode
+    ##############################
+
+    async def _process(self, query: str):
         return (
             await self.reasoning.flow(
                 task=query,
                 llm=self.llm_name,
             )
-        )[-2:]
+            # )[-2:]
+        )[-1]["content"]
 
-    async def _process_persistent(
-        self,
-        request: Request,
-    ):
+    ##############################
+    # Persistent Agent Mode
+    ##############################
+
+    def _create_server(self):
+        """Create Starlette app with single process route"""
+        routes = [
+            Route(
+                f"/{self.name}",
+                self._process_persistent,
+                methods=["POST"],
+            )
+        ]
+        return Starlette(routes=routes)
+
+    async def _process_persistent(self, request: Request):
         """HTTP endpoint that handles process requests"""
         try:
-            data: dict[
-                str,
-                str,
-            ] = await request.json()
+            data: dict[str, str] = await request.json()
             result = await self._process(data.get("query"))
             return JSONResponse(
                 {
@@ -273,6 +197,38 @@ class SwiftAgent:
                 },
                 status_code=500,
             )
+
+    ##############################
+    # Hosted Agent Mode
+    ##############################
+
+    async def _connect_hosted(
+        self, host: str | None = None, port: int | None = None
+    ):
+        while True:
+            try:
+                async with websockets.connect(
+                    f"ws://{host}:{port}"
+                ) as suite_connection:
+                    self.suite_connection = suite_connection
+                    self.connected = True
+
+                    await self.send_message(
+                        "join",
+                        name=self.name,
+                    )
+
+                    # Main message loop
+                    async for message in suite_connection:
+                        await self._process_hosted(message)
+
+            except websockets.ConnectionClosed:
+                print("Connection lost, attempting to reconnect...")
+                self.connected = False
+                await asyncio.sleep(5)  # Wait before reconnecting
+            except Exception as e:
+                print(f"Error: {e}")
+                await asyncio.sleep(5)
 
     async def _process_hosted(self, raw_message: str):
         """
@@ -312,58 +268,27 @@ class SwiftAgent:
                 print(
                     f"{self.name} got an unknown message type: {message_type}"
                 )
-
                 print(data)
         except json.JSONDecodeError:
             print("Failed to decode incoming message as JSON")
 
-    async def _connect_hosted(
-        self, host: str | None = None, port: int | None = None
-    ):
-        while True:
-            try:
-                async with websockets.connect(
-                    f"ws://{host}:{port}"
-                ) as websocket:
-                    self.websocket = websocket
-                    self.connected = True
-                    print(f"Connected to ws://{host}:{port}")
-
-                    await self.send_message(
-                        "join",
-                        name=self.name,
-                    )
-
-                    # Main message loop
-                    async for message in websocket:
-                        await self._process_hosted(message)
-
-            except websockets.ConnectionClosed:
-                print("Connection lost, attempting to reconnect...")
-                self.connected = False
-                await asyncio.sleep(5)  # Wait before reconnecting
-            except Exception as e:
-                print(f"Error: {e}")
-                await asyncio.sleep(5)
-
-    async def send_message(
-        self,
-        message_type: str,
-        **data,
-    ) -> None:
+    async def send_message(self, message_type: str, **data) -> None:
         """Send a message to the server"""
         # if self.websocket and self.connected:
-        print(self.websocket, "heree")
-        if self.websocket:
+        if self.suite_connection:
             try:
                 message = {
                     "type": message_type,
                     **data,
                 }
-                await self.websocket.send(json.dumps(message))
+                await self.suite_connection.send(json.dumps(message))
             except websockets.ConnectionClosed:
                 self.connected = False
                 print("Connection lost while sending message")
+
+    ##############################
+    # Run Agent
+    ##############################
 
     async def run(
         self,
