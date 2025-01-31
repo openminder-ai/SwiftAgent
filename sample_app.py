@@ -5,6 +5,8 @@ from swiftagent.application.types import (
     ApplicationType,
 )
 
+from swiftagent.actions.wrapper import action
+
 from pprint import (
     pprint,
 )
@@ -14,11 +16,11 @@ agent = SwiftAgent(name="cow")
 import asyncio
 
 
-@agent.action(
+@action(
     name="get_weather",
     description="gets weather for a city",
 )
-def action(
+def action_test(
     city: str,
 ) -> int:
     if "london" in city.lower():
@@ -27,6 +29,9 @@ def action(
         return 14
     else:
         return 113
+
+
+agent.add_action(action_test)
 
 
 async def main():

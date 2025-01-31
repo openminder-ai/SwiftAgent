@@ -3,12 +3,7 @@ from functools import (
     wraps,
 )
 
-from typing import (
-    Callable,
-    Any,
-    Optional,
-    Type,
-)
+from typing import Callable, Any, Optional, Type, overload
 
 from swiftagent.application.types import (
     ApplicationType,
@@ -103,7 +98,9 @@ class SwiftAgent:
         )
 
         self.file_handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
         )
 
         # Run server with uvicorn
@@ -159,14 +156,31 @@ class SwiftAgent:
 
         return decorator
 
+    @overload
+    def add_action(self, action: Any) -> None: ...
+    @overload
+    def add_action(self, name: str, action: Action | Any) -> None: ...
     def add_action(
         self,
-        name: str,
-        action: Action,
-    ):
+        name: str | Any,
+        action: Action | Any | None = None,
+    ) -> None:
         """Manually add an action to the agent."""
-        self._actions[name] = action
-        self.reasoning.set_action(action)
+        if action is None:
+            action = name
+            if hasattr(action, "__action_instance__"):
+                action_instance = action.__action_instance__
+                self._actions[action_instance.name] = action_instance
+                self.reasoning.set_action(action)
+                return
+
+        if isinstance(action, Action):
+            self._actions[name] = action
+            self.reasoning.set_action(action)
+        else:
+            action_instance = action.__action_instance__
+            self._actions[action_instance.name] = action_instance
+            self.reasoning.set_action(action)
 
     def resource(
         self,
@@ -288,21 +302,29 @@ class SwiftAgent:
                 # Send back the response so SwiftSuite can forward to the client
                 if request_id:
                     await self.send_message(
-                        "agent_query_response", request_id=request_id, result=result_str
+                        "agent_query_response",
+                        request_id=request_id,
+                        result=result_str,
                     )
 
             else:
                 # Handle any other incoming message types if needed
-                print(f"{self.name} got an unknown message type: {message_type}")
+                print(
+                    f"{self.name} got an unknown message type: {message_type}"
+                )
 
                 print(data)
         except json.JSONDecodeError:
             print("Failed to decode incoming message as JSON")
 
-    async def _connect_hosted(self, host: str | None = None, port: int | None = None):
+    async def _connect_hosted(
+        self, host: str | None = None, port: int | None = None
+    ):
         while True:
             try:
-                async with websockets.connect(f"ws://{host}:{port}") as websocket:
+                async with websockets.connect(
+                    f"ws://{host}:{port}"
+                ) as websocket:
                     self.websocket = websocket
                     self.connected = True
                     print(f"Connected to ws://{host}:{port}")
@@ -387,7 +409,9 @@ class SwiftAgent:
 
             await server.serve()
         elif type_ == ApplicationType.HOSTED:
-            connection_task = asyncio.create_task(self._connect_hosted(host, port))
+            connection_task = asyncio.create_task(
+                self._connect_hosted(host, port)
+            )
 
             try:
                 while True:

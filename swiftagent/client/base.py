@@ -13,7 +13,6 @@ import uuid
 class SwiftAgentClient:
     def __init__(
         self,
-        agent_name: str | None = None,
         host: str = "localhost",
         port: int = 8001,
         client_name: str = "SwiftClient",
@@ -22,7 +21,6 @@ class SwiftAgentClient:
         Initialize the SwiftAgent client.
 
         Args:
-            agent_name: Name of the agent to connect to
             host: The hostname where SwiftAgent is running
             port: The port number SwiftAgent is listening on
         """
@@ -75,7 +73,9 @@ class SwiftAgentClient:
         Returns the result as a string.
         """
         if not self.websocket:
-            raise ConnectionError("WebSocket not connected. Call connect_ws() first.")
+            raise ConnectionError(
+                "WebSocket not connected. Call connect_ws() first."
+            )
 
         # Create a unique request_id for correlating the response
         request_id = str(uuid.uuid4())
@@ -172,7 +172,9 @@ class SwiftAgentClient:
                     result = await response.json()
 
                     if result.get("status") == "error":
-                        raise ValueError(f"Server error: {result.get('message')}")
+                        raise ValueError(
+                            f"Server error: {result.get('message')}"
+                        )
 
                     return result["result"]
 
