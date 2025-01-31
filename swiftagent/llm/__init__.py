@@ -1,1 +1,3 @@
-from .adapter import LLMAdapter
+from .adapter import (
+    LLMAdapter,
+)

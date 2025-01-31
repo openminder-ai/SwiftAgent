@@ -4,7 +4,9 @@ from typing import (
     Optional,
     get_type_hints,
 )
-from functools import wraps
+from functools import (
+    wraps,
+)
 import inspect
 
 from swiftagent.actions.utils import (
@@ -18,7 +20,12 @@ class Action:
         func: Callable,
         name: str,
         description: Optional[str] = None,
-        params: Optional[dict[str, str]] = None,
+        params: Optional[
+            dict[
+                str,
+                str,
+            ]
+        ] = None,
         strict: bool = True,
     ):
         self.func = func
@@ -89,7 +96,10 @@ class Action:
         """Creates a wrapped version of the function with metadata attached."""
 
         @wraps(self.func)
-        def wrapper(*args, **kwargs):
+        def wrapper(
+            *args,
+            **kwargs,
+        ):
             return self.func(
                 *args,
                 **kwargs,

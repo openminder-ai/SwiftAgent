@@ -1,1 +1,3 @@
-from .base import BaseReasoning
+from .base import (
+    BaseReasoning,
+)

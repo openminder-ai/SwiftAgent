@@ -1,1 +1,3 @@
-from .base import SwiftAgentClient
+from .base import (
+    SwiftAgentClient,
+)

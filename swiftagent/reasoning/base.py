@@ -4,24 +4,37 @@ from swiftagent.llm.adapter import (
 
 from swiftagent.actions import (
     Action,
-    ActionFormatter,
 )
+
+from swiftagent.actions.formatter import ActionFormatter
 
 import json
 
 
 class BaseReasoning:
-    def __init__(self, name: str):
-        self.actions: dict[str, Action] = {}
+    def __init__(
+        self,
+        name: str,
+    ):
+        self.actions: dict[
+            str,
+            Action,
+        ] = {}
         self.resources = {}
         self.formatter = ActionFormatter()
 
-    def set_action(self, action: Action):
+    def set_action(
+        self,
+        action: Action,
+    ):
         self.actions[action.name] = action
 
         return self
 
-    def set_resources(self, resources):
+    def set_resources(
+        self,
+        resources,
+    ):
         pass
 
         return self
@@ -34,9 +47,7 @@ class BaseReasoning:
     ):
         system_message = (
             "You are an AI agent who has access to the following tools"
-            + self.formatter.format_actions(
-                list(self.actions.values())
-            )
+            + self.formatter.format_actions(list(self.actions.values()))
             + "\n"
             + """
         Solve the goal the user has, taking as many steps as needed. \
@@ -105,9 +116,7 @@ class BaseReasoning:
                     )
                     action_to_call = self.actions.get(action_name)
 
-                    action_response = action_to_call.func(
-                        **action_args
-                    )
+                    action_response = action_to_call.func(**action_args)
 
                     messages.append(
                         {

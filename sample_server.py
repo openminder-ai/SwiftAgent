@@ -2,9 +2,17 @@ import asyncio
 import json
 import websockets
 import logging
-from typing import Dict, Callable, Any
-from dataclasses import dataclass
-from datetime import datetime
+from typing import (
+    Dict,
+    Callable,
+    Any,
+)
+from dataclasses import (
+    dataclass,
+)
+from datetime import (
+    datetime,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,26 +26,45 @@ class Client:
 
 
 class WebSocketServer:
-    def __init__(self, host: str = "localhost", port: int = 8765):
+    def __init__(
+        self,
+        host: str = "localhost",
+        port: int = 8765,
+    ):
         self.host = host
         self.port = port
         self.clients: Dict[
-            websockets.WebSocketServerProtocol, Client
+            websockets.WebSocketServerProtocol,
+            Client,
         ] = {}
-        self.message_handlers: Dict[str, Callable] = {}
+        self.message_handlers: Dict[
+            str,
+            Callable,
+        ] = {}
         self.heartbeat_interval = 30
 
         # Register default message handlers
-        self.register_handler("join", self.handle_join)
-        self.register_handler("chat", self.handle_chat)
-        self.register_handler("status", self.handle_status)
+        self.register_handler(
+            "join",
+            self.handle_join,
+        )
+        self.register_handler(
+            "chat",
+            self.handle_chat,
+        )
+        self.register_handler(
+            "status",
+            self.handle_status,
+        )
 
-    def register_handler(self, message_type: str, handler: Callable):
+    def register_handler(
+        self,
+        message_type: str,
+        handler: Callable,
+    ):
         """Register a new message handler"""
         self.message_handlers[message_type] = handler
-        logger.info(
-            f"Registered handler for message type: {message_type}"
-        )
+        logger.info(f"Registered handler for message type: {message_type}")
 
     async def handle_join(
         self,
@@ -45,7 +72,10 @@ class WebSocketServer:
         data: dict,
     ) -> None:
         """Handle join messages"""
-        name = data.get("name", "Anonymous")
+        name = data.get(
+            "name",
+            "Anonymous",
+        )
         self.clients[websocket] = Client(
             websocket=websocket,
             name=name,
@@ -72,7 +102,10 @@ class WebSocketServer:
                 {
                     "type": "chat",
                     "sender": client.name,
-                    "message": data.get("message", ""),
+                    "message": data.get(
+                        "message",
+                        "",
+                    ),
                     "timestamp": datetime.now().isoformat(),
                 }
             )
@@ -95,7 +128,10 @@ class WebSocketServer:
                 )
             )
 
-    async def broadcast(self, message: dict) -> None:
+    async def broadcast(
+        self,
+        message: dict,
+    ) -> None:
         """Broadcast a message to all connected clients"""
         dead_clients = set()
         for client in self.clients.values():
@@ -109,7 +145,8 @@ class WebSocketServer:
             await self.handle_disconnect(websocket)
 
     async def handle_disconnect(
-        self, websocket: websockets.WebSocketServerProtocol
+        self,
+        websocket: websockets.WebSocketServerProtocol,
     ) -> None:
         """Handle client disconnection"""
         if websocket in self.clients:
@@ -125,7 +162,8 @@ class WebSocketServer:
             logger.info(f"Client {client.name} disconnected")
 
     async def heartbeat(
-        self, websocket: websockets.WebSocketServerProtocol
+        self,
+        websocket: websockets.WebSocketServerProtocol,
     ) -> None:
         """Send periodic heartbeats and check for responses"""
         while True:
@@ -135,20 +173,13 @@ class WebSocketServer:
 
                 if websocket in self.clients:
                     client = self.clients[websocket]
-                    time_since_pong = (
-                        asyncio.get_event_loop().time()
-                        - client.last_pong
-                    )
+                    time_since_pong = asyncio.get_event_loop().time() - client.last_pong
 
-                    if (
-                        time_since_pong
-                        > self.heartbeat_interval * 1.5
-                    ):
-                        logger.warning(
-                            f"Client {client.name} timed out"
-                        )
+                    if time_since_pong > self.heartbeat_interval * 1.5:
+                        logger.warning(f"Client {client.name} timed out")
                         await websocket.close(
-                            code=1000, reason="Heartbeat timeout"
+                            code=1000,
+                            reason="Heartbeat timeout",
                         )
                         break
 
@@ -156,13 +187,12 @@ class WebSocketServer:
                 break
 
     async def handle_pong(
-        self, websocket: websockets.WebSocketServerProtocol
+        self,
+        websocket: websockets.WebSocketServerProtocol,
     ) -> None:
         """Update last_pong time when pong is received"""
         if websocket in self.clients:
-            self.clients[websocket].last_pong = (
-                asyncio.get_event_loop().time()
-            )
+            self.clients[websocket].last_pong = asyncio.get_event_loop().time()
 
     async def message_handler(
         self,
@@ -176,12 +206,11 @@ class WebSocketServer:
 
             if message_type in self.message_handlers:
                 await self.message_handlers[message_type](
-                    websocket, data
+                    websocket,
+                    data,
                 )
             else:
-                logger.warning(
-                    f"Unknown message type: {message_type}"
-                )
+                logger.warning(f"Unknown message type: {message_type}")
                 await websocket.send(
                     json.dumps(
                         {
@@ -203,36 +232,38 @@ class WebSocketServer:
             )
 
     async def connection_handler(
-        self, websocket: websockets.WebSocketServerProtocol
+        self,
+        websocket: websockets.WebSocketServerProtocol,
     ) -> None:
         """Handle new client connections"""
         # Set up pong handler
-        websocket.pong_handler = lambda: asyncio.create_task(
-            self.handle_pong(websocket)
-        )
+        websocket.pong_handler = lambda: asyncio.create_task(self.handle_pong(websocket))
 
         # Start heartbeat
-        heartbeat_task = asyncio.create_task(
-            self.heartbeat(websocket)
-        )
+        heartbeat_task = asyncio.create_task(self.heartbeat(websocket))
 
         try:
             async for message in websocket:
-                await self.message_handler(websocket, message)
+                await self.message_handler(
+                    websocket,
+                    message,
+                )
         except websockets.ConnectionClosed:
             logger.info("Connection closed")
         finally:
             heartbeat_task.cancel()
             await self.handle_disconnect(websocket)
 
-    async def start(self) -> None:
+    async def start(
+        self,
+    ) -> None:
         """Start the WebSocket server"""
         async with websockets.serve(
-            self.connection_handler, self.host, self.port
+            self.connection_handler,
+            self.host,
+            self.port,
         ):
-            logger.info(
-                f"Server started on ws://{self.host}:{self.port}"
-            )
+            logger.info(f"Server started on ws://{self.host}:{self.port}")
             await asyncio.Future()  # run forever
 
 
@@ -241,7 +272,10 @@ async def main():
     server = WebSocketServer()
 
     # Register a custom message handler
-    async def handle_custom(websocket, data):
+    async def handle_custom(
+        websocket,
+        data,
+    ):
         if websocket in server.clients:
             await websocket.send(
                 json.dumps(
@@ -252,7 +286,10 @@ async def main():
                 )
             )
 
-    server.register_handler("custom", handle_custom)
+    server.register_handler(
+        "custom",
+        handle_custom,
+    )
     await server.start()
 
 

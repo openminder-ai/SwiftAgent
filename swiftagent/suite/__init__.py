@@ -1,1 +1,3 @@
-from .base import SwiftSuite
+from .base import (
+    SwiftSuite,
+)
