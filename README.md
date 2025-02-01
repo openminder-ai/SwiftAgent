@@ -109,6 +109,7 @@ For persistent or suite modes, use SwiftClient to send tasks:
 from swiftagent.client import SwiftClient
 
 client = SwiftClient()
+
 await client.send(
     "Your task description",
     agent_name="MyCustomAgent"

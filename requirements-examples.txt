@@ -1,1 +1,3 @@
 python-weather
+arxiv
+swiftagent

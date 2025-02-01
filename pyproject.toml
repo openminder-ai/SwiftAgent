@@ -10,7 +10,7 @@ license = {file = "LICENSE"}
 name = "swiftagent"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
-version = "0.0.1"
+version = "0.0.2"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
