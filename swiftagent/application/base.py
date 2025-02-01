@@ -49,7 +49,8 @@ class SwiftAgent:
 
         self.console = Console(theme=client_cli_default)
 
-        self.setup_logging()
+        ##TODO better logging
+        # self.setup_logging()
 
     def setup_logging(self, log_file="agent.log"):
         self.file_handler = RotatingFileHandler(

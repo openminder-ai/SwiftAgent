@@ -10,6 +10,8 @@ from swiftagent.actions.formatter import ActionFormatter
 
 import json
 
+import inspect
+
 
 class BaseReasoning:
     def __init__(
@@ -116,7 +118,13 @@ class BaseReasoning:
                     )
                     action_to_call = self.actions.get(action_name)
 
-                    action_response = action_to_call.func(**action_args)
+                    # Check if the function is async
+                    if inspect.iscoroutinefunction(action_to_call.func):
+                        action_response = await action_to_call.func(
+                            **action_args
+                        )
+                    else:
+                        action_response = action_to_call.func(**action_args)
 
                     messages.append(
                         {

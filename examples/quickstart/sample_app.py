@@ -20,9 +20,10 @@ import asyncio
     name="get_weather",
     description="gets weather for a city",
 )
-def action_test(
+async def action_test(
     city: str,
 ) -> int:
+    await asyncio.sleep(1)
     if "london" in city.lower():
         return 54
     elif "herndon" in city.lower():
@@ -32,15 +33,15 @@ def action_test(
 
 
 async def main():
-    # print(
-    #     await agent.run(
-    #         task="""
-    # What is the difference in temperatures in the cities of london and herndon
-    # """
-    #
-    # )
+    print(
+        await agent.run(
+            task="""
+    What is the difference in temperatures in the cities of london and herndon
+    """
+        )
+    )
 
-    await agent.run(type_=ApplicationType.PERSISTENT)
+    # await agent.run(type_=ApplicationType.PERSISTENT)
 
 
 asyncio.run(main())
