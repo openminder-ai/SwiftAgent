@@ -1,6 +1,6 @@
-from swiftagent import SwiftAgent
-
 import python_weather, asyncio
+
+from swiftagent import SwiftAgent
 
 agent = SwiftAgent()
 

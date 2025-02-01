@@ -1,6 +1,6 @@
-from swiftagent import SwiftAgent
-from swiftagent.suite import SwiftSuite
 import python_weather, asyncio
+
+from swiftagent import SwiftAgent, SwiftSuite
 
 agent = SwiftAgent(name="PersistentWeatherAgent")
 

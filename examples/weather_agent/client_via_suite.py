@@ -1,5 +1,6 @@
 import asyncio
-from swiftagent.client import SwiftClient
+
+from swiftagent import SwiftClient
 
 
 async def suite_client_demo():

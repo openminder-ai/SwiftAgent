@@ -1,7 +1,7 @@
-from swiftagent import SwiftAgent
-from swiftagent.application.types import ApplicationType
-
 import python_weather, asyncio
+
+from swiftagent import SwiftAgent, ApplicationType
+
 
 agent = SwiftAgent(name="PersistentWeatherAgent")
 
