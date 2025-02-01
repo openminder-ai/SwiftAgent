@@ -3,16 +3,14 @@ build-backend = "hatchling.build"
 requires = ["hatchling", "hatch-requirements-txt", "hatch-vcs"]
 
 [project]
-dynamic = ["dependencies", "version"]
+dynamic = ["dependencies"]
 description = "SwiftAgent: Building AI Agents At SCALE"
 keywords = ["llm", "agents", "interface"]
 license = {file = "LICENSE"}
 name = "swiftagent"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
-
-[tool.hatch.version]
-source = "vcs"
+version = "0.0.1"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -37,9 +35,13 @@ exclude = [
     "examples/",
     "examples/**",
     "tests/",
+    "docs/",
+    "docs/**",
     "tests/**",
     "guides/",
-    "guides/**"
+    "guides/**",
+    "venv/",
+    "venv/**",
 ]
 
 [tool.hatch.metadata.hooks.requirements_txt]
