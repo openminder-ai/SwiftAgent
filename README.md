@@ -24,6 +24,7 @@
 ## Table of contents
 
 - [Why SwiftAgent?](#why-swiftagent)
+- [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Key Features](#key-features)
 - [Understanding Suites](#understanding-suites)
@@ -43,7 +44,77 @@ One of SwiftAgent’s core strengths is its persistence by design. Unlike standa
 
 Furthermore, SwiftAgent supports multi-agent collaboration, allowing multiple agents to work together seamlessly to tackle intricate tasks. Combined with its integrated detailed analytics and replay capabilities, you can monitor every interaction, gain deep insights into your agents’ decision processes, and even replay queries for debugging or performance optimization.
 
+## Installation
+
+```bash
+pip install swiftagent
+```
+
 ## Getting Started
+
+### Step 1: Create an Agent Instance
+
+Start by importing and instantiating a SwiftAgent. You can create either a named or unnamed agent:
+
+```python
+from swiftagent import SwiftAgent
+
+# Unnamed agent (for simple use cases)
+agent = SwiftAgent()
+
+# Named agent (required for persistent/suite modes)
+agent = SwiftAgent(name="MyCustomAgent")
+```
+
+### Step 2: Define Actions
+
+Actions are the core functionality of your agent. Use the `@agent.action` decorator to define what your agent can do:
+
+```python
+@agent.action(description="A human-readable description of what this action does")
+async def my_custom_action(param1: str, param2: int) -> str:
+    # Your action logic here
+    return result
+```
+
+### Step 3: Choose a Running Mode
+
+SwiftAgent supports three running modes, each suited for different use cases:
+
+#### Standard Mode (One-off Tasks)
+```python
+await agent.run(task="Your task description here")
+```
+
+#### Persistent Mode (Long-running Service)
+```python
+from swiftagent.application.types import ApplicationType
+await agent.run(type_=ApplicationType.PERSISTENT)
+```
+
+#### Suite Mode (Multiple Agents)
+```python
+from swiftagent.suite import SwiftSuite
+suite = SwiftSuite(name="MySuite", agents=[agent1, agent2])
+await suite.setup(host="localhost", port=8001)
+```
+
+### Step 4: Connect to Your Agent
+
+For standard mode, the agent processes the task immediately and returns.
+
+For persistent or suite modes, use SwiftClient to send tasks:
+
+```python
+from swiftagent.client import SwiftClient
+
+client = SwiftClient()
+await client.send(
+    "Your task description",
+    agent_name="MyCustomAgent"
+)
+```
+
 
 ## Key Features
 
