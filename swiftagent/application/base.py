@@ -16,6 +16,14 @@ import websockets
 from websockets.legacy.server import WebSocketServerProtocol
 import json
 
+from rich.console import Console
+from rich.theme import Theme
+from rich.status import Status
+from rich.panel import Panel
+from rich import box
+
+from swiftagent.styling.defaults import client_cli_default
+
 
 class SwiftAgent:
     def __init__(
@@ -38,6 +46,8 @@ class SwiftAgent:
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
         self.suite_connection: Optional[WebSocketServerProtocol] = None
+
+        self.console = Console(theme=client_cli_default)
 
         self.setup_logging()
 
@@ -182,7 +192,23 @@ class SwiftAgent:
         """HTTP endpoint that handles process requests"""
         try:
             data: dict[str, str] = await request.json()
+
+            # TODO: better query tracking
+            self.console.print(
+                f"[bright_black][[/bright_black][cyan]Client[/cyan][bright_black] →[/bright_black] "
+                f"[green]{self.name}[/green][bright_black]][/bright_black] "
+                f"[white]{data.get('query')}[/white]"
+            )
+
             result = await self._process(data.get("query"))
+
+            # TODO: better query tracking
+            self.console.print(
+                f"[bright_black][[/bright_black][green]{self.name}[/green][bright_black] →[/bright_black] "
+                f"[cyan]Client[/cyan][bright_black]][/bright_black] "
+                f"[white]{result}[/white]"
+            )
+
             return JSONResponse(
                 {
                     "status": "success",
@@ -310,7 +336,30 @@ class SwiftAgent:
                     - websocket_uri: URI of the websocket server
         """
         if type_ == ApplicationType.STANDARD:
-            return await self._process(query=task)
+            # Show query being sent
+            self.console.print(
+                Panel(
+                    f"[info]Query:[/info] {task}",
+                    title=f"[ws]→ Sending to {self.name}[/ws]",
+                    box=box.ROUNDED,
+                    border_style="blue",
+                )
+            )
+
+            # Show thinking animation while waiting
+            with Status("[ws]Agent thinking...[/ws]", spinner="dots") as status:
+                result = await self._process(query=task)
+
+            self.console.print(
+                Panel(
+                    result,
+                    title="[success]← Response Received[/success]",
+                    border_style="green",
+                    box=box.HEAVY,
+                )
+            )
+
+            return result
         elif type_ == ApplicationType.PERSISTENT:
             # Create app if not exists
             if not self._server:

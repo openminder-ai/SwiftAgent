@@ -1,7 +1,5 @@
 import aiohttp
-from typing import (
-    Any,
-)
+from typing import Any, Literal
 
 import asyncio
 import websockets
@@ -17,6 +15,8 @@ from rich import box
 
 from swiftagent.styling.defaults import client_cli_default
 
+from swiftagent.application.types import ApplicationType
+
 
 class SwiftClient:
     def __init__(
@@ -26,7 +26,7 @@ class SwiftClient:
         client_name: str = "SwiftClient",
     ):
         """
-        Initialize the SwiftAgent client.
+        Initialize the SwiftClient client.
 
         Args:
             host: The hostname where SwiftAgent is running
@@ -45,17 +45,31 @@ class SwiftClient:
         self.console = Console(theme=client_cli_default)
 
     ##############################
+    # Universal
+    ##############################
+    async def send(
+        self,
+        query: str,
+        agent_name: str | None = None,
+        type_: Literal["agent", "suite"] = "agent",
+    ):
+        if type_ == "agent":
+            return await self.process_query(query, agent_name)
+        elif type_ == "suite":
+            return await self.process_query_ws(agent_name, query)
+
+    ##############################
     # Persistent
     ##############################
-    async def process_query(self, query: str, agent_name: str) -> dict[
-        str,
-        Any,
-    ]:
+    async def process_query(
+        self, query: str, agent_name: str
+    ) -> dict[str, Any]:
         """
         Send a query to the SwiftAgent server.
 
         Args:
             query: The query string to process
+            agent_name: Name of the agent to process the query
 
         Returns:
             Dict containing the response from the server
@@ -64,22 +78,43 @@ class SwiftClient:
             aiohttp.ClientError: If the request fails
             ValueError: If the server returns an error response
         """
+        self.console.print(
+            Panel(
+                f"[info]Query:[/info] {query}",
+                title=f"[ws]→ Sending to {agent_name}[/ws]",
+                box=box.ROUNDED,
+                border_style="blue",
+            )
+        )
+
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(
-                    f"http://{self.base_url}/{agent_name}",
-                    json={"query": query},
-                    headers={"Content-Type": "application/json"},
-                ) as response:
-                    response.raise_for_status()
-                    result = await response.json()
+                # Show thinking animation while making the request
+                with Status(
+                    "[ws]Agent thinking...[/ws]", spinner="dots"
+                ) as status:
+                    async with session.post(
+                        f"http://{self.base_url}/{agent_name}",
+                        json={"query": query},
+                        headers={"Content-Type": "application/json"},
+                    ) as response:
+                        response.raise_for_status()
+                        result = await response.json()
 
-                    if result.get("status") == "error":
-                        raise ValueError(
-                            f"Server error: {result.get('message')}"
-                        )
+                if result.get("status") == "error":
+                    raise ValueError(f"Server error: {result.get('message')}")
 
-                    return result["result"]
+                # After request completes, show the response
+                self.console.print(
+                    Panel(
+                        result.get("result"),
+                        title="[success]← Response Received[/success]",
+                        border_style="green",
+                        box=box.HEAVY,
+                    )
+                )
+
+                return result["result"]
 
             except aiohttp.ClientError as e:
                 raise aiohttp.ClientError(
