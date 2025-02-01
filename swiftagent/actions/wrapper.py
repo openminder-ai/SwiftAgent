@@ -4,7 +4,7 @@ from swiftagent.actions.base import Action
 
 
 def action(
-    name: str,
+    name: Optional[str] = None,
     description: Optional[str] = None,
     params: Optional[dict[str, str]] = None,
     strict: bool = True,

@@ -73,7 +73,7 @@ class SwiftAgent:
 
     def action(
         self,
-        name: str,
+        name: Optional[str] = None,
         description: Optional[str] = None,
         params: Optional[dict[str, str]] = None,
         strict: bool = True,

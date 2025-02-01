@@ -12,6 +12,8 @@ import json
 
 import inspect
 
+from pprint import pprint
+
 
 class BaseReasoning:
     def __init__(
@@ -59,7 +61,7 @@ class BaseReasoning:
         Respond in JSON format, with the format
 
         {
-            "response": "your response here",
+            "response": "your response here (SHOULD BE A STRING)",
             "is_final": true or false, true if you are done, false if still need to keep going
         }
         """

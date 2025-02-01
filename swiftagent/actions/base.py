@@ -18,7 +18,7 @@ class Action:
     def __init__(
         self,
         func: Callable,
-        name: str,
+        name: Optional[str],
         description: Optional[str] = None,
         params: Optional[
             dict[
@@ -29,7 +29,7 @@ class Action:
         strict: bool = True,
     ):
         self.func = func
-        self.name = name
+        self.name = name or func.__name__
         self.description = description or func.__doc__ or ""
         self.params = params or {}
         self.strict = strict

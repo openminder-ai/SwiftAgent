@@ -6,15 +6,14 @@ async def suite_client_demo():
     client = SwiftClient(
         host="localhost",
         port=8001,
-        client_name="MyWsClient",  # the SwiftSuite port
+        client_name="MyWsClient",
     )
 
     await client._connect_to_suite()
 
-    # Suppose you have an agent named "Alice" in that suite
-    ws_result = await client.process_query_ws(
-        "cow",
-        "What is the difference in temperatures in the cities of london and herndon!",
+    await client.process_query_ws(
+        "PersistentWeatherAgent",
+        "What is the difference in temperatures in the cities of london and herndon",
     )
 
     # Cleanly close
