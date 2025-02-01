@@ -56,7 +56,12 @@ class SwiftClient:
         if type_ == "agent":
             return await self.process_query(query, agent_name)
         elif type_ == "suite":
-            return await self.process_query_ws(agent_name, query)
+            await self._connect_to_suite()
+
+            response = await self.process_query_ws(agent_name, query)
+
+            await self._close_connection_to_suite()
+            return response
 
     ##############################
     # Persistent
@@ -150,7 +155,7 @@ class SwiftClient:
         """
         if self.connection:
             await self.connection.close()
-            print("[WS] Connection closed.")
+            # print("[WS] Connection closed.")
         if self.ws_listen_task:
             self.ws_listen_task.cancel()
 
