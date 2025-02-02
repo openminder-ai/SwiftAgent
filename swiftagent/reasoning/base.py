@@ -80,10 +80,12 @@ class BaseReasoning:
 
         recall_semantic_information = "\n".join(
             [
-                [
-                    memory.get("text")
-                    for memory in memory_container.recall(task, 2)
-                ]
+                "\n".join(
+                    [
+                        memory.get("text")
+                        for memory in memory_container.recall(task, 2)
+                    ]
+                )
                 for memory_container in self.semantic_memories
             ]
         )
@@ -102,7 +104,7 @@ class BaseReasoning:
             },
             {
                 "role": "user",
-                "content": task,
+                "content": initial_user_message,
             },
         ]
 

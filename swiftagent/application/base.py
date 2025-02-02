@@ -24,6 +24,8 @@ from rich import box
 
 from swiftagent.styling.defaults import client_cli_default
 
+from swiftagent.memory.semantic import SemanticMemory
+
 
 class SwiftAgent:
     def __init__(
@@ -48,6 +50,8 @@ class SwiftAgent:
         self.suite_connection: Optional[WebSocketServerProtocol] = None
 
         self.console = Console(theme=client_cli_default)
+
+        self.semantic_memories: dict[str, SemanticMemory] = {}
 
         ##TODO better logging
         # self.setup_logging()
@@ -160,6 +164,16 @@ class SwiftAgent:
             "callable": func,
             "metadata": metadata,
         }
+
+    def add_semantic_memory_section(
+        self, semantic_memory_section: SemanticMemory
+    ):
+        self.semantic_memories[semantic_memory_section.name] = (
+            semantic_memory_section
+        )
+        self.reasoning.add_semantic_memory_section(semantic_memory_section)
+
+        return self
 
     ##############################
     # Universal Agent Mode

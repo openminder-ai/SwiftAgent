@@ -10,14 +10,20 @@ from swiftagent.memory.utils import (
 
 from typing import Any
 
+from swiftagent.prebuilt.storage.chroma import ChromaDatabase
+
 
 class SemanticMemory(Memory):
     def __init__(
         self,
         name: str,
-        container_collection: VectorCollection,
+        container_collection: VectorCollection | None = None,
         text_splitter: Any = text_splitter,
     ):
+        if container_collection is None:
+            container_collection = ChromaDatabase(
+                "./chroma_db"
+            ).get_or_create_collection("semantic_memory_default")
         self.container_collection = container_collection
         self.text_splitter = text_splitter
         self.name = name

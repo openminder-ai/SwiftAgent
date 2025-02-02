@@ -1,29 +1,30 @@
-# import arxiv, asyncio
+import arxiv, asyncio
 
-# from swiftagent import SwiftAgent
+import warnings
 
-# agent = SwiftAgent()
+warnings.filterwarnings("ignore")
 
-# async def main():
-#     await agent.run(task="tell me about ProLLM")
-
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
-
+from swiftagent import SwiftAgent
 from swiftagent.memory.semantic import SemanticMemory
-from swiftagent.prebuilt.storage.chroma import ChromaDatabase, ChromaCollection
+from swiftagent.prebuilt.storage.chroma import ChromaDatabase
 
-container_collection = ChromaDatabase("./chroma_db").get_or_create_collection(
-    "semantic_test"
+
+memory = SemanticMemory(name="test")
+
+memory.ingest("https://arxiv.org/pdf/0802.3355.pdf").ingest(
+    "The quick brown fox jumps over the lazy dog."
+).ingest("Machine learning enables computers to learn from data.").ingest(
+    "Artificial intelligence is transforming industries."
 )
 
-memory = SemanticMemory(name="test", container_collection=container_collection)
+agent = SwiftAgent()
 
-# memory.ingest('https://arxiv.org/pdf/0802.3355.pdf') \
-#       .ingest("The quick brown fox jumps over the lazy dog.") \
-#       .ingest("Machine learning enables computers to learn from data.") \
-#       .ingest("Artificial intelligence is transforming industries.")
+agent.add_semantic_memory_section(memory)
 
 
-print(memory.recall("what is PVM", 2))
+async def main():
+    await agent.run(task="what is PVM?")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
