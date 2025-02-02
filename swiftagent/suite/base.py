@@ -1,10 +1,10 @@
-import websockets.legacy
-import websockets.legacy.server
 from swiftagent.application import SwiftAgent
 from swiftagent.application.types import ApplicationType
 from swiftagent.core.utilities import hash_url
 import websockets
-from websockets.legacy.server import WebSocketServerProtocol
+
+# from websockets.legacy.server import WebSocketServerProtocol
+from websockets import ServerConnection as WebSocketServerProtocol
 import asyncio
 from typing import Callable
 import json

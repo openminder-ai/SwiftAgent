@@ -13,7 +13,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 from swiftagent.core.utilities import hash_url
 import websockets
-from websockets.legacy.server import WebSocketServerProtocol
+
+# from websockets.legacy.server import WebSocketServerProtocol
+from websockets import ServerConnection as WebSocketServerProtocol
 import json
 
 from rich.console import Console
