@@ -35,7 +35,7 @@ class ChromaDatabase(VectorDatabase):
         else:
             self._embedding_function = embedding_function
 
-    def get_collection(
+    def get_or_create_collection(
         self,
         name: str,
         embedding_function: Optional[EmbeddingFunction | Any] = None,

@@ -8,3 +8,4 @@ langchain-text-splitters
 rich
 chromadb
 sentence_transformers
+markitdown

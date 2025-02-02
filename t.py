@@ -18,7 +18,7 @@ def embed(text: str) -> np.ndarray:
 db = ChromaDatabase(persist_directory="./chroma_db")
 
 # Create (or get) a collection. Optionally, you can override the embedding function per collection.
-collection = db.get_collection(
+collection = db.get_or_create_collection(
     "sentence_transformers_collection", embedding_function=embed
 )
 
