@@ -11,3 +11,8 @@ dist
 dist/
 dist/*
 dist/**
+
+chroma_db
+chroma_db/
+chroma_db/*
+chroma_db/** 
