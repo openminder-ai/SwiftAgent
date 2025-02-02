@@ -8,6 +8,8 @@ from swiftagent.actions import (
 
 from swiftagent.actions.formatter import ActionFormatter
 
+from swiftagent.memory.semantic import SemanticMemory
+
 import json
 
 import inspect
@@ -24,6 +26,8 @@ class BaseReasoning:
             str,
             Action,
         ] = {}
+
+        self.semantic_memories: list[SemanticMemory] = []
         self.resources = {}
         self.formatter = ActionFormatter()
 
@@ -40,6 +44,13 @@ class BaseReasoning:
         resources,
     ):
         pass
+
+        return self
+
+    def add_semantic_memory_section(
+        self, semantic_memory_section: SemanticMemory
+    ):
+        self.semantic_memories.append(semantic_memory_section)
 
         return self
 
@@ -66,6 +77,23 @@ class BaseReasoning:
         }
         """
         )
+
+        recall_semantic_information = "\n".join(
+            [
+                [
+                    memory.get("text")
+                    for memory in memory_container.recall(task, 2)
+                ]
+                for memory_container in self.semantic_memories
+            ]
+        )
+
+        initial_user_message = f"""
+        User Task: {task}
+
+        You also have the following semantic memory information:
+        {recall_semantic_information}
+        """
 
         messages = [
             {

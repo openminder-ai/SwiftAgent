@@ -1,4 +1,6 @@
-from swiftagent.core.storage import VectorCollection, VectorDatabase
+from swiftagent.core.storage import VectorCollection
+
+from swiftagent.memory.base import Memory
 
 from swiftagent.memory.utils import (
     text_splitter,
@@ -9,7 +11,7 @@ from swiftagent.memory.utils import (
 from typing import Any
 
 
-class SemanticMemory:
+class SemanticMemory(Memory):
     def __init__(
         self,
         name: str,
