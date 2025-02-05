@@ -63,6 +63,10 @@ class SwiftSuite:
             "agent_query_response", self.handle_agent_query_response
         )
 
+    ##############################
+    # Hosted
+    ##############################
+
     def register_handler(
         self,
         message_type: str,
@@ -344,49 +348,55 @@ class SwiftSuite:
         for dead_ws in dead_agents:
             await self.handle_disconnect(dead_ws)
 
-    async def setup(
+    async def run(
         self,
         host: str | None = None,
         port: int | None = None,
+        mode: ApplicationType = ApplicationType.HOSTED,
     ):
-        suite_url = f"{host}{port}"
-        hashed_suite_url = hash_url(suite_url)
+        if mode == ApplicationType.HOSTED:
+            suite_url = f"{host}{port}"
+            hashed_suite_url = hash_url(suite_url)
 
-        self.console.rule(
-            "[info]SwiftSuite Initialization", style="bright_blue"
-        )
-
-        with self.console.status(
-            "Initializing SwiftSuite", spinner="dots9", spinner_style="cyan"
-        ) as status:
-            await websockets.serve(
-                self.connection_handler,
-                host,
-                port,
+            self.console.rule(
+                "[info]SwiftSuite Initialization", style="bright_blue"
             )
 
-        self.console.print(
-            "[success]✓[/success] SwiftSuite Started Successfully"
-        )
+            with self.console.status(
+                "Initializing SwiftSuite", spinner="dots9", spinner_style="cyan"
+            ) as status:
+                await websockets.serve(
+                    self.connection_handler,
+                    host,
+                    port,
+                )
 
-        code_panel = Panel(
-            f"✨ Suite Address: [code]{hashed_suite_url}[/code]",
-            box=box.ROUNDED,
-            style="bright_blue",
-            padding=(0, 2),
-        )
-        self.console.print(code_panel)
+            self.console.print(
+                "[success]✓[/success] SwiftSuite Started Successfully"
+            )
 
-        # Connection info in subtle styling
-        self.console.print(
-            f"[optional]Direct WS Connection: ws://{host}:{port}[/optional]"
-        )
+            code_panel = Panel(
+                f"✨ Suite Address: [code]{hashed_suite_url}[/code]",
+                box=box.ROUNDED,
+                style="bright_blue",
+                padding=(0, 2),
+            )
+            self.console.print(code_panel)
 
-        self.console.rule("", style="bright_blue")
+            # Connection info in subtle styling
+            self.console.print(
+                f"[optional]Direct WS Connection: ws://{host}:{port}[/optional]"
+            )
 
-        # Launch all "to be joined" agents in Hosted mode
-        for agent in self.agents_to_be_joined:
-            await agent.run(type_=ApplicationType.HOSTED, host=host, port=port)
+            self.console.rule("", style="bright_blue")
 
-        # Keep the server running
-        await asyncio.Future()  # run forever
+            # Launch all "to be joined" agents in Hosted mode
+            for agent in self.agents_to_be_joined:
+                await agent.run(
+                    type_=ApplicationType.HOSTED, host=host, port=port
+                )
+
+            # Keep the server running
+            await asyncio.Future()  # run forever
+        elif mode == ApplicationType.STANDARD:
+            pass

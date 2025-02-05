@@ -1,29 +1,40 @@
-import arxiv, asyncio
-
 import warnings
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
+import python_weather, asyncio
 
 from swiftagent import SwiftAgent
-from swiftagent.memory.semantic import SemanticMemory
-from swiftagent.prebuilt.storage.chroma import ChromaDatabase
+
+from swiftagent.router.base import SwiftRouter
 
 
-memory = SemanticMemory(name="test")
-
-memory.ingest("https://arxiv.org/pdf/0802.3355.pdf").ingest(
-    "The quick brown fox jumps over the lazy dog."
-).ingest("Machine learning enables computers to learn from data.").ingest(
-    "Artificial intelligence is transforming industries."
+agent1 = SwiftAgent(
+    name="StockAgent",
+    description="agent that is able to get stock info from a market",
+)
+agent2 = SwiftAgent(
+    name="SynthesisAgent",
+    description="agent that is able to synthesize information from multiple places",
+)
+agent3 = SwiftAgent(
+    name="WebAgent",
+    description="agent able to collect information across the news and web",
 )
 
-agent = SwiftAgent()
 
-agent.add_semantic_memory_section(memory)
+router = SwiftRouter(agents=[agent1, agent2, agent3])
 
 
 async def main():
-    await agent.run(task="what is PVM?")
+    from pprint import pprint
+
+    response = await router.route(
+        llm="gpt-4o",
+        query="Summarize analyst recommendations and share the latest news for NVDA",
+    )
+
+    pprint(response)
 
 
 if __name__ == "__main__":

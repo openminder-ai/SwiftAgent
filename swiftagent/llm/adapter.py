@@ -2,6 +2,10 @@ from litellm import (
     acompletion,
 )
 
+import openai
+
+client = openai.AsyncOpenAI()
+
 
 class LLMAdapter:
 
@@ -14,3 +18,4 @@ class LLMAdapter:
             *args,
             **kwargs,
         )
+        # return await client.chat.completions.create(*args, **kwargs)
