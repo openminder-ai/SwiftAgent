@@ -40,10 +40,6 @@ class SwiftRouter:
             max_tokens=4096,
         )
 
-        try:
-            response = json.loads(completion.choices[0].message.content)
-        except Exception as e:
-            print(e)
-            print(completion.choices[0].message.content)
+        response = json.loads(completion.choices[0].message.content)
 
         return response

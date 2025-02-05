@@ -1,6 +1,7 @@
 import asyncio
 from functools import wraps
 from typing import Callable, Any, Optional, Type, overload
+from swiftagent.actions.set import ActionSet
 from swiftagent.application.types import ApplicationType
 from swiftagent.actions.base import Action
 from swiftagent.reasoning.base import BaseReasoning
@@ -116,7 +117,7 @@ class SwiftAgent:
             if hasattr(action, "__action_instance__"):
                 action_instance = action.__action_instance__
                 self._actions[action_instance.name] = action_instance
-                self.reasoning.set_action(action)
+                self.reasoning.set_action(action_instance)
                 return
 
         if isinstance(action, Action):
@@ -125,7 +126,14 @@ class SwiftAgent:
         else:
             action_instance = action.__action_instance__
             self._actions[action_instance.name] = action_instance
-            self.reasoning.set_action(action)
+            self.reasoning.set_action(action_instance)
+
+    def add_actionset(self, actionset: ActionSet) -> None:
+        """
+        Adds all actions from an ActionSet to this agent.
+        """
+        for action_instance in actionset.actions:
+            self.add_action(action_instance)
 
     def resource(
         self,
