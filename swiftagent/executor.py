@@ -75,7 +75,7 @@ class SwiftExecutor:
             )
 
         # Run the agent's task asynchronously.
-        output = await agent.run(input_text)
+        output = await agent.run(task=input_text)
 
         # Save the output under its unique_id.
         self.outputs[unique_id] = output

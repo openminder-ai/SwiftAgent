@@ -1,3 +1,4 @@
 python-weather
 arxiv
 swiftagent
+yfinance

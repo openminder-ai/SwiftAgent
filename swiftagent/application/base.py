@@ -35,24 +35,26 @@ class SwiftAgent:
         self,
         name: str = "DefaultAgent",
         description: str = "An agent that does stuff",
+        instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
-        llm_name: str = "gpt-4o-mini",
+        llm_name: str = "gpt-4o",
     ):
         self.name = name
         self.description = description
+        self.instruction = instruction
 
         # Collections to store actions/resources
         self._actions: dict[str, dict[str, Any]] = {}
         self._resources: dict[str, dict[str, Any]] = {}
 
-        self.reasoning = reasoning(name=self.name)
+        self.reasoning = reasoning(name=self.name, instructions=instruction)
         self.llm_name = llm_name
 
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
         self.suite_connection: Optional[WebSocketServerProtocol] = None
 
-        self.console = Console(theme=client_cli_default)
+        # self.console = Console(theme=client_cli_default)
 
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
@@ -115,7 +117,7 @@ class SwiftAgent:
         if action is None:
             action = name
             if hasattr(action, "__action_instance__"):
-                action_instance = action.__action_instance__
+                action_instance: Action = action.__action_instance__
                 self._actions[action_instance.name] = action_instance
                 self.reasoning.set_action(action_instance)
                 return
@@ -219,20 +221,20 @@ class SwiftAgent:
             data: dict[str, str] = await request.json()
 
             # TODO: better query tracking
-            self.console.print(
-                f"[bright_black][[/bright_black][cyan]Client[/cyan][bright_black] →[/bright_black] "
-                f"[green]{self.name}[/green][bright_black]][/bright_black] "
-                f"[white]{data.get('query')}[/white]"
-            )
+            # self.console.print(
+            #     f"[bright_black][[/bright_black][cyan]Client[/cyan][bright_black] →[/bright_black] "
+            #     f"[green]{self.name}[/green][bright_black]][/bright_black] "
+            #     f"[white]{data.get('query')}[/white]"
+            # )
 
             result = await self._process(data.get("query"))
 
             # TODO: better query tracking
-            self.console.print(
-                f"[bright_black][[/bright_black][green]{self.name}[/green][bright_black] →[/bright_black] "
-                f"[cyan]Client[/cyan][bright_black]][/bright_black] "
-                f"[white]{result}[/white]"
-            )
+            # self.console.print(
+            #     f"[bright_black][[/bright_black][green]{self.name}[/green][bright_black] →[/bright_black] "
+            #     f"[cyan]Client[/cyan][bright_black]][/bright_black] "
+            #     f"[white]{result}[/white]"
+            # )
 
             return JSONResponse(
                 {
@@ -362,27 +364,27 @@ class SwiftAgent:
         """
         if type_ == ApplicationType.STANDARD:
             # Show query being sent
-            self.console.print(
-                Panel(
-                    f"[info]Query:[/info] {task}",
-                    title=f"[ws]→ Sending to {self.name}[/ws]",
-                    box=box.ROUNDED,
-                    border_style="blue",
-                )
-            )
+            # self.console.print(
+            #     Panel(
+            #         f"[info]Query:[/info] {task}",
+            #         title=f"[ws]→ Sending to {self.name}[/ws]",
+            #         box=box.ROUNDED,
+            #         border_style="blue",
+            #     )
+            # )
 
             # Show thinking animation while waiting
-            with Status("[ws]Agent thinking...[/ws]", spinner="dots") as status:
-                result = await self._process(query=task)
+            # with Status("[ws]Agent thinking...[/ws]", spinner="dots") as status:
+            result = await self._process(query=task)
 
-            self.console.print(
-                Panel(
-                    result,
-                    title="[success]← Response Received[/success]",
-                    border_style="green",
-                    box=box.HEAVY,
-                )
-            )
+            # self.console.print(
+            #     Panel(
+            #         result,
+            #         title="[success]← Response Received[/success]",
+            #         border_style="green",
+            #         box=box.HEAVY,
+            #     )
+            # )
 
             return result
         elif type_ == ApplicationType.PERSISTENT:

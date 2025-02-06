@@ -9,3 +9,4 @@ rich
 chromadb
 sentence_transformers
 markitdown
+platformdirs

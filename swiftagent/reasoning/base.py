@@ -18,10 +18,7 @@ from pprint import pprint
 
 
 class BaseReasoning:
-    def __init__(
-        self,
-        name: str,
-    ):
+    def __init__(self, name: str, instructions: str):
         self.actions: dict[
             str,
             Action,
@@ -30,6 +27,8 @@ class BaseReasoning:
         self.semantic_memories: list[SemanticMemory] = []
         self.resources = {}
         self.formatter = ActionFormatter()
+
+        self.instructions = instructions
 
     def set_action(
         self,
@@ -61,7 +60,8 @@ class BaseReasoning:
         llm: str = "gpt-4o-mini",
     ):
         system_message = (
-            "You are an AI agent who has access to the following tools"
+            f"You are an AI agent{'.' if self.instructions is None else ', with instructions '+self.instructions} "
+            + "You have  access to the following tools"
             + self.formatter.format_actions(list(self.actions.values()))
             + "\n"
             + """
@@ -121,6 +121,7 @@ class BaseReasoning:
                     messages=messages,
                     tools=passable_actions,
                     tool_choice="auto",
+                    response_format={"type": "json_object"},
                 )
             else:
                 completion = await LLMAdapter.inference(
@@ -141,13 +142,16 @@ class BaseReasoning:
                 messages.append(completion.choices[0].message)
 
                 for action in actions:
-                    (
-                        action_name,
-                        action_args,
-                    ) = (
-                        action.function.name,
-                        json.loads(action.function.arguments),
-                    )
+                    try:
+                        (
+                            action_name,
+                            action_args,
+                        ) = (
+                            action.function.name,
+                            json.loads(action.function.arguments),
+                        )
+                    except:
+                        print("failed here")
                     action_to_call = self.actions.get(action_name)
 
                     # Check if the function is async

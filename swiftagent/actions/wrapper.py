@@ -39,6 +39,7 @@ def action(
 
         # Preserve the action instance on the wrapper
         wrapper.__action_instance__ = action_instance
+
         return wrapper
 
     return decorator
