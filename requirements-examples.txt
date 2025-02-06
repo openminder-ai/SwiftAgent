@@ -2,3 +2,4 @@ python-weather
 arxiv
 swiftagent
 yfinance
+duckduckgo-search
