@@ -1,9 +1,9 @@
 import asyncio
-
 from swiftagent import SwiftAgent
 
+from swiftagent.router.output import RouterOutput, Task
 
-# The SwiftExecutor class that builds and runs the pipeline.
+
 class SwiftExecutor:
     def __init__(self, agent_mapping: dict[str, SwiftAgent]):
         """
@@ -14,45 +14,36 @@ class SwiftExecutor:
             {}
         )  # This will store outputs keyed by each agent's unique_id
 
-    async def execute_pipeline(self, pipeline: dict) -> dict:
+    async def execute_pipeline(self, router_output: "RouterOutput") -> dict:
         """
         Execute the pipeline of agent tasks. Tasks in the same tier run concurrently.
 
-        :param pipeline: Dictionary describing the pipeline.
-                         Expected format:
-                         {
-                             'tiers': {
-                                 '0': [ { ... task details ... }, ... ],
-                                 '1': [ { ... task details ... }, ... ],
-                                 ...
-                             }
-                         }
+        :param router_output: A RouterOutput instance containing tiers and tasks.
         :return: A dictionary mapping each task's unique_id to its output.
         """
-        tiers: dict = pipeline.get("tiers", {})
-
-        # Process tiers in ascending order (assuming tier keys can be cast to int)
-        for tier_key in sorted(tiers.keys(), key=int):
+        # Process tiers in ascending order (assuming tier IDs are integers)
+        for tier_id in sorted(router_output.tiers.keys()):
+            tier = router_output.tiers[tier_id]
             tasks = []
-            for task_info in tiers[tier_key]:
+            for task in tier.tasks:
                 # Schedule each task in the current tier concurrently
-                tasks.append(asyncio.create_task(self.execute_task(task_info)))
+                tasks.append(asyncio.create_task(self.execute_task(task)))
             # Wait for all tasks in the current tier to finish before moving to the next tier
             await asyncio.gather(*tasks)
         return self.outputs
 
-    async def execute_task(self, task_info: dict) -> str:
+    async def execute_task(self, task: "Task") -> str:
         """
         Execute a single agent task.
 
-        :param task_info: Dictionary with keys 'agent', 'instruction',
-                          'unique_id', and optionally 'accepts_inputs_from'.
+        :param task: A Task object with attributes 'agent', 'instruction',
+                     'unique_id', and optionally 'accepts_inputs_from'.
         :return: The output from the agent's run method.
         """
-        agent_name = task_info["agent"]
-        unique_id = task_info["unique_id"]
-        instruction = task_info["instruction"]
-        accepts_inputs_from = task_info.get("accepts_inputs_from", [])
+        agent_name = task.agent
+        unique_id = task.unique_id
+        instruction = task.instruction
+        accepts_inputs_from = task.accepts_inputs_from
 
         # Build the input string for the agent. Start with the instruction.
         # If the agent depends on other agents' outputs, append them.
@@ -68,7 +59,6 @@ class SwiftExecutor:
 
         # Get the agent instance from the mapping.
         agent = self.agent_mapping.get(agent_name)
-
         if not agent:
             raise ValueError(
                 f"Agent '{agent_name}' not found in agent mapping."

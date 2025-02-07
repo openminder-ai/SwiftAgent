@@ -85,6 +85,22 @@ finance_agent.add_actionset(yfinance_actions)
 router = SwiftRouter(agents=[summary_agent, web_agent, finance_agent])
 
 
+async def main_test():
+    from swiftagent.suite import SwiftSuite
+
+    suite = SwiftSuite(agents=[web_agent, finance_agent, summary_agent])
+
+    from pprint import pprint
+    from swiftagent import ApplicationType
+
+    pprint(
+        await suite.run(
+            mode=ApplicationType.STANDARD,
+            task="Summarize analyst recommendations and share the latest news for NVDA. Use markdown, including tables.",
+        )
+    )
+
+
 async def main():
     response = await router.route(
         llm="gpt-4o-mini",
@@ -104,7 +120,7 @@ async def main():
     import json
 
     with open("file1.json", "w+") as file:
-        file.write(json.dumps(response, indent=4))
+        file.write(json.dumps(response.to_dict(), indent=4))
 
     from pprint import pprint
 
@@ -117,4 +133,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+    asyncio.run(main_test())

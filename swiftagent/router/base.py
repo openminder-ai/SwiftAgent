@@ -4,6 +4,8 @@ from swiftagent import SwiftAgent
 
 from swiftagent.llm.adapter import LLMAdapter
 
+from swiftagent.router.output import RouterOutput
+
 import json
 
 
@@ -42,4 +44,4 @@ class SwiftRouter:
 
         response = json.loads(completion.choices[0].message.content)
 
-        return response
+        return RouterOutput(response)

@@ -1,0 +1,35 @@
+{
+    "tiers": {
+        "0": {
+            "tier_id": 0,
+            "tasks": [
+                {
+                    "instruction": "Fetch latest news for NVDA",
+                    "agent": "WebAgent",
+                    "unique_id": "web_agent_1",
+                    "accepts_inputs_from": []
+                },
+                {
+                    "instruction": "Fetch analyst recommendations for NVDA",
+                    "agent": "FinanceAgent",
+                    "unique_id": "finance_agent_1",
+                    "accepts_inputs_from": []
+                }
+            ]
+        },
+        "1": {
+            "tier_id": 1,
+            "tasks": [
+                {
+                    "instruction": "Summarize and format the results in markdown including tables",
+                    "agent": "ReportAgent",
+                    "unique_id": "report_agent_1",
+                    "accepts_inputs_from": [
+                        "finance_agent_1",
+                        "web_agent_1"
+                    ]
+                }
+            ]
+        }
+    }
+}

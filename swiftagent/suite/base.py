@@ -3,21 +3,20 @@ from swiftagent.application.types import ApplicationType
 from swiftagent.core.utilities import hash_url
 import websockets
 
-# from websockets.legacy.server import WebSocketServerProtocol
 from websockets import ServerConnection as WebSocketServerProtocol
 import asyncio
 from typing import Callable
 import json
 
 from rich.console import Console
-from rich.theme import Theme
 from rich.panel import Panel
 from rich import box
-from rich.live import Live
-from rich.table import Table
-import time
 
 from swiftagent.styling.defaults import suite_cli_default
+
+from swiftagent.router.base import SwiftRouter
+from swiftagent.router.output import RouterOutput
+from swiftagent.executor import SwiftExecutor
 
 
 class SwiftSuite:
@@ -100,7 +99,6 @@ class SwiftSuite:
         self.agents[websocket] = agent_
         agent_.last_pong = asyncio.get_event_loop().time()
 
-    # (NEW) --------------------- CLIENT HANDLERS ---------------------
     async def handle_client_join(
         self,
         websocket: WebSocketServerProtocol,
@@ -223,8 +221,6 @@ class SwiftSuite:
                 f"[cyan]Client[/cyan][bright_black]][/bright_black] "
                 f"[white]{result}[/white]"
             )
-
-    # -----------------------------------------------------------------
 
     async def handle_disconnect(
         self,
@@ -353,6 +349,7 @@ class SwiftSuite:
         host: str | None = None,
         port: int | None = None,
         mode: ApplicationType = ApplicationType.HOSTED,
+        task: str | None = None,
     ):
         if mode == ApplicationType.HOSTED:
             suite_url = f"{host}{port}"
@@ -399,4 +396,19 @@ class SwiftSuite:
             # Keep the server running
             await asyncio.Future()  # run forever
         elif mode == ApplicationType.STANDARD:
-            pass
+            router = SwiftRouter(agents=[*self.agents_to_be_joined])
+
+            response = await router.route(
+                llm="gpt-4o-mini",
+                query=task,
+            )
+
+            agent_dict = {
+                agent.name: agent for agent in self.agents_to_be_joined
+            }
+
+            executor = SwiftExecutor(agent_dict)
+
+            _response = await executor.execute_pipeline(response)
+
+            return _response
