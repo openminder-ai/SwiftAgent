@@ -207,11 +207,17 @@ class SwiftAgent:
     def _create_server(self):
         """Create Starlette app with single process route"""
         routes = [
+            Route(f"/{self.name}", self._process_persistent, methods=["POST"]),
             Route(
-                f"/{self.name}",
-                self._process_persistent,
+                f"/{self.name}/add_memory_store",
+                self._add_memory_store,
                 methods=["POST"],
-            )
+            ),
+            Route(
+                f"/{self.name}/ingest_memory_store",
+                self._ingest_memory_store,
+                methods=["POST"],
+            ),
         ]
         return Starlette(routes=routes)
 
@@ -249,6 +255,89 @@ class SwiftAgent:
                     "message": str(e),
                 },
                 status_code=500,
+            )
+
+    async def _add_memory_store(self, request: Request):
+        """
+        Create a new semantic memory store by name.
+        Expected JSON body: {"store_name": "some_unique_identifier"}
+        """
+        try:
+            data = await request.json()
+            store_name = data.get("store_name")
+            if not store_name:
+                return JSONResponse(
+                    {"status": "error", "message": "Missing 'store_name'."},
+                    status_code=400,
+                )
+
+            # Check if the store already exists
+            if store_name in self.semantic_memories:
+                return JSONResponse(
+                    {
+                        "status": "error",
+                        "message": f"Store '{store_name}' already exists.",
+                    },
+                    status_code=400,
+                )
+
+            # Create new store and add to this agent's dictionary
+            new_memory = SemanticMemory(name=store_name)
+            self.add_semantic_memory_section(new_memory)
+
+            return JSONResponse(
+                {
+                    "status": "success",
+                    "message": f"Semantic memory store '{store_name}' created.",
+                }
+            )
+
+        except Exception as e:
+            return JSONResponse(
+                {"status": "error", "message": str(e)}, status_code=500
+            )
+
+    async def _ingest_memory_store(self, request: Request):
+        """
+        Ingest content into an existing semantic memory store by name.
+        Expected JSON body: {"store_name": "some_unique_identifier", "content": "some text to store"}
+        """
+        try:
+            data = await request.json()
+            store_name = data.get("store_name")
+            content = data.get("content")
+
+            if not store_name or not content:
+                return JSONResponse(
+                    {
+                        "status": "error",
+                        "message": "Missing 'store_name' or 'content'.",
+                    },
+                    status_code=400,
+                )
+
+            if store_name not in self.semantic_memories:
+                return JSONResponse(
+                    {
+                        "status": "error",
+                        "message": f"Store '{store_name}' does not exist. Create it first.",
+                    },
+                    status_code=400,
+                )
+
+            # Ingest the content into the requested memory store
+            self.semantic_memories[store_name].ingest(content)
+
+            return JSONResponse(
+                {
+                    "status": "success",
+                    "message": f"Content ingested into store '{store_name}'.",
+                }
+            )
+
+        except Exception as e:
+            return JSONResponse(
+                {"status": "error", "message": str(e)}, status_code=500
             )
 
     ##############################

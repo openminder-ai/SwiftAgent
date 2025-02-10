@@ -29,19 +29,19 @@ class SwiftClient:
         Initialize the SwiftClient client.
 
         Args:
-            host: The hostname where SwiftAgent is running
-            port: The port number SwiftAgent is listening on
+            host: The hostname where SwiftSuite is running (for websockets)
+            port: The port number SwiftSuite is listening on
+            client_name: A display name for logging / identification
         """
         self.base_url = f"{host}:{port}"
-
         self.connection = None
         self.loop = asyncio.get_event_loop()
         self.ws_listen_task = None
 
-        # Keep track of pending requests => Future objects (for suite-based queries)
+        # Keep track of pending requests => Future objects
+        # key: request_id => value: Future that we set_result(...) upon receiving the response
         self.pending_ws_requests = {}
         self.client_name = client_name
-
         self.console = Console(theme=client_cli_default)
 
     ##############################
@@ -126,6 +126,30 @@ class SwiftClient:
                     f"Failed to communicate with SwiftAgent: {str(e)}"
                 )
 
+    async def add_memory_store(self, agent_name: str, store_name: str):
+        """
+        Create a new memory store on the given agent (in persistent mode).
+        """
+        async with aiohttp.ClientSession() as session:
+            url = f"http://{self.base_url}/{agent_name}/add_memory_store"
+            payload = {"store_name": store_name}
+            async with session.post(url, json=payload) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+
+    async def ingest_memory_store(
+        self, agent_name: str, store_name: str, content: str
+    ):
+        """
+        Ingest text into an existing memory store on the given agent.
+        """
+        async with aiohttp.ClientSession() as session:
+            url = f"http://{self.base_url}/{agent_name}/ingest_memory_store"
+            payload = {"store_name": store_name, "content": content}
+            async with session.post(url, json=payload) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+
     ##############################
     # Hosted
     ##############################
@@ -135,13 +159,13 @@ class SwiftClient:
         Also start a background listening task to handle incoming messages.
         """
         if self.connection:
-            print("Already connected via WebSocket.")
+            # already connected
             return
 
-        self.connection = await websockets.connect(f"ws://{self.base_url}")
-        # print(f"[WS] Connected to {self.ws_uri} as client '{self.client_name}'.")
+        ws_uri = f"ws://{self.base_url}"
+        self.connection = await websockets.connect(ws_uri)
 
-        # Send 'client_join' to identify ourselves
+        # Identify ourselves as a 'client'
         await self._send_message_to_suite(
             message_type="client_join", client_name=self.client_name
         )
@@ -155,7 +179,6 @@ class SwiftClient:
         """
         if self.connection:
             await self.connection.close()
-            # print("[WS] Connection closed.")
         if self.ws_listen_task:
             self.ws_listen_task.cancel()
 
@@ -215,41 +238,97 @@ class SwiftClient:
         """
         if not self.connection:
             raise ConnectionError("WebSocket is not connected.")
-
-        msg = {
-            "type": message_type,
-        }
+        msg = {"type": message_type}
         msg.update(kwargs)
         await self.connection.send(json.dumps(msg))
 
     async def _listen_to_suite(self):
         """
         Background task to listen for messages from SwiftSuite,
-        handle them (e.g. capturing agent responses), and resolve futures.
+        handle them (e.g., capturing agent responses), and resolve futures.
         """
         try:
             async for raw_msg in self.connection:
-                data: dict = json.loads(raw_msg)
+                data = json.loads(raw_msg)
                 msg_type = data.get("type")
 
+                # Single-agent response
                 if msg_type == "client_query_response":
-                    request_id = data.get("request_id")
-                    result = data.get("result", "")
+                    req_id = data.get("request_id")
+                    if req_id in self.pending_ws_requests:
+                        fut = self.pending_ws_requests.pop(req_id)
+                        fut.set_result(data["result"])
 
-                    # Resolve the matching future
-                    if request_id in self.pending_ws_requests:
-                        fut = self.pending_ws_requests.pop(request_id)
-                        fut.set_result(result)
+                # Multi-agent pipeline final response
+                elif msg_type == "client_multi_agent_query_response":
+                    req_id = data.get("request_id")
+                    if req_id in self.pending_ws_requests:
+                        fut = self.pending_ws_requests.pop(req_id)
+                        fut.set_result(data["result"])
 
                 elif msg_type == "system":
-                    print(f"[WS System] {data.get('message')}")
+                    self.console.print(
+                        f"[info][System][/info] {data.get('message')}"
+                    )
 
                 elif msg_type == "error":
-                    print(f"[WS Error] {data.get('message')}")
+                    self.console.print(
+                        f"[error]Error: {data.get('message')}[/error]"
+                    )
 
                 else:
-                    print(f"[WS] Unknown message type: {msg_type}")
+                    # For debugging or ignoring other message types
+                    self.console.print(
+                        f"[warning]Unknown WS message type[/warning]: {msg_type}"
+                    )
+
         except websockets.ConnectionClosed:
-            print("[WS] Connection to SwiftSuite closed.")
+            self.console.print("[warning]WebSocket connection closed[/warning]")
         except Exception as e:
-            print(f"[WS] Error in _ws_listen: {e}")
+            self.console.print(f"[error]Error in _listen_to_suite: {e}[/error]")
+
+    async def process_multi_agent_query_ws(self, query: str) -> dict:
+        """
+        Send a multi-agent pipeline query to SwiftSuite.
+        Returns the final dictionary (the aggregated pipeline results).
+
+        Usage:
+            result = await client.process_multi_agent_query_ws("some big multi-agent task")
+        """
+        await self._connect_to_suite()
+
+        request_id = str(uuid.uuid4())
+        future = self.loop.create_future()
+        self.pending_ws_requests[request_id] = future
+
+        self.console.print(
+            Panel(
+                f"[info]Multi-Agent Query:[/info] {query}",
+                title="[ws]→ SwiftSuite (Router)[/ws]",
+                box=box.ROUNDED,
+                border_style="blue",
+            )
+        )
+
+        # Send the multi-agent request
+        await self._send_message_to_suite(
+            message_type="client_multi_agent_query",
+            request_id=request_id,
+            query=query,
+        )
+
+        # Wait for final pipeline response
+        with Status(
+            "[ws]Orchestrating multi-agent tasks...[/ws]", spinner="dots"
+        ) as status:
+            result = await future  # should be a dict of outputs
+
+        self.console.print(
+            Panel(
+                json.dumps(result, indent=2),
+                title="[success]← Multi-Agent Pipeline Response[/success]",
+                border_style="green",
+                box=box.HEAVY,
+            )
+        )
+        return result
