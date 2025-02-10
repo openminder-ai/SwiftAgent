@@ -20,6 +20,8 @@ async def main():
     for unique_id, output_str in final_pipeline_result.items():
         print(f"{unique_id}:\n{output_str}\n-----------------")
 
+    await client._close_connection_to_suite()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

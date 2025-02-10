@@ -569,8 +569,10 @@ class SwiftSuite:
 
             # Launch all "to be joined" agents in Hosted mode
             for agent in self.agents_to_be_joined:
-                await agent.run(
-                    type_=ApplicationType.HOSTED, host=host, port=port
+                asyncio.create_task(
+                    agent.run(
+                        type_=ApplicationType.HOSTED, host=host, port=port
+                    )
                 )
 
             # Keep the server running
