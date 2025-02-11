@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Any
+from typing import List, Any, Optional
+from enum import Enum
+from dataclasses import dataclass
 
 
 class Memory(ABC):
@@ -42,3 +44,20 @@ class Memory(ABC):
             NotImplementedError: If the child class doesn't implement this method.
         """
         raise NotImplementedError("Subclass must implement recall method")
+
+
+class MemoryItemType(Enum):
+    TEXT = "TEXT"
+    ACTION = "ACTION"
+
+
+@dataclass
+class MemoryItem:
+    """
+    A simple container for a single memory entry, such as an action or piece of text.
+    """
+
+    item_type: MemoryItemType
+    content: str
+    # Optional: you can add timestamps, metadata, embeddings, etc.
+    timestamp: Optional[float] = None

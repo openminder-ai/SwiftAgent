@@ -8,6 +8,7 @@ from swiftagent.executor import SwiftExecutor
 import asyncio
 
 summary_agent = SwiftAgent(
+    verbose=True,
     name="ReportAgent",
     instruction="""\
         You are the lead editor of a prestigious financial news desk! 📰
@@ -33,6 +34,7 @@ summary_agent = SwiftAgent(
     description="agent capable of following instructions and writing excellent reports",
 )
 web_agent = SwiftAgent(
+    verbose=True,
     name="WebAgent",
     description="agent able to collect information across the news and webt",
     instruction="""
@@ -56,6 +58,7 @@ web_agent = SwiftAgent(
     """,
 )
 finance_agent = SwiftAgent(
+    verbose=True,
     name="FinanceAgent",
     instruction="""\
         You are a skilled financial analyst with expertise in market data! 📊

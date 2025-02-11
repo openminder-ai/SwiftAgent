@@ -4,6 +4,8 @@ from typing import Callable, Any, Optional, Type, overload
 from swiftagent.actions.set import ActionSet
 from swiftagent.application.types import ApplicationType
 from swiftagent.actions.base import Action
+from swiftagent.memory.long_term import LongTermMemory
+from swiftagent.memory.working import WorkingMemory
 from swiftagent.reasoning.base import BaseReasoning
 from starlette.requests import Request
 from starlette.applications import Starlette
@@ -25,6 +27,7 @@ from rich.status import Status
 from rich.panel import Panel
 from rich import box
 
+from swiftagent.reasoning.salient import SalientMemoryReasoning
 from swiftagent.styling.defaults import client_cli_default
 
 from swiftagent.memory.semantic import SemanticMemory
@@ -37,7 +40,9 @@ class SwiftAgent:
         description: str = "An agent that does stuff",
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
+        enable_salient_memory: bool = True,
         llm_name: str = "gpt-4o",
+        verbose: bool = True,  # <-- added flag
     ):
         self.name = name
         self.description = description
@@ -54,31 +59,63 @@ class SwiftAgent:
         self.last_pong: Optional[float] = None
         self.suite_connection: Optional[WebSocketServerProtocol] = None
 
-        # self.console = Console(theme=client_cli_default)
+        # Agent-wide verbosity toggle
+        self.verbose = verbose
+
+        # If verbose, attach a console for Rich printing. Otherwise None.
+        self.console = Console(theme=client_cli_default) if verbose else None
 
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
-        ##TODO better logging
-        # self.setup_logging()
-
-    def setup_logging(self, log_file="agent.log"):
-        self.file_handler = RotatingFileHandler(
-            log_file,
-            maxBytes=1024 * 1024,  # 1MB
-            backupCount=5,  # Keep 5 backup files
-        )
-
-        self.file_handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        # [1] Setup short-term memory + long-term memory if enabled
+        if enable_salient_memory:
+            self.working_memory = WorkingMemory(
+                max_text_items=10, max_action_items=10
             )
-        )
+            # Give it a reference to LTM if you want eviction to store automatically
+            self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
+            self.working_memory.long_term_memory = self.long_term_memory
 
-        # Run server with uvicorn
-        self.logger = logging.getLogger("persistent_agent")
-        self.logger.handlers.clear()  # Remove existing handlers
-        self.logger.addHandler(self.file_handler)
-        self.logger.setLevel(logging.INFO)  # Set desired log level
+            self.reasoning = SalientMemoryReasoning(
+                name=self.name,
+                instructions=self.instruction or "",
+                working_memory=self.working_memory,
+                long_term_memory=self.long_term_memory,
+            )
+        else:
+            # fallback to plain reasoning
+            from swiftagent.reasoning.base import BaseReasoning
+
+            self.working_memory = None
+            self.long_term_memory = None
+            self.reasoning = BaseReasoning(
+                name=self.name, instructions=self.instruction
+            )
+
+    def _print(self, message: str):
+        """Helper to safely print only if verbose."""
+        if self.verbose and self.console:
+            self.console.print(message)
+
+    def _status(self, message: str):
+        """
+        Context manager that shows a spinner if verbose=True, else does nothing.
+        Usage:
+            with self._status("Thinking..."):
+                # do work
+        """
+        if self.verbose and self.console:
+            return Status(message, spinner="dots", console=self.console)
+        else:
+            # Return a dummy context manager if not verbose
+            class _NoOpCm:
+                def __enter__(self_):
+                    return self_
+
+                def __exit__(self_, exc_type, exc_val, exc_tb):
+                    pass
+
+            return _NoOpCm()
 
     def action(
         self,
@@ -227,20 +264,21 @@ class SwiftAgent:
             data: dict[str, str] = await request.json()
 
             # TODO: better query tracking
-            # self.console.print(
-            #     f"[bright_black][[/bright_black][cyan]Client[/cyan][bright_black] →[/bright_black] "
-            #     f"[green]{self.name}[/green][bright_black]][/bright_black] "
-            #     f"[white]{data.get('query')}[/white]"
-            # )
+            self._print(
+                f"[bright_black][[/bright_black][cyan]Client[/cyan][bright_black] →[/bright_black] "
+                f"[green]{self.name}[/green][bright_black]][/bright_black] "
+                f"[white]{data.get('query')}[/white]"
+            )
 
-            result = await self._process(data.get("query"))
+            with self._status("Agent Thinking..."):
+                result = await self._process(data.get("query"))
 
             # TODO: better query tracking
-            # self.console.print(
-            #     f"[bright_black][[/bright_black][green]{self.name}[/green][bright_black] →[/bright_black] "
-            #     f"[cyan]Client[/cyan][bright_black]][/bright_black] "
-            #     f"[white]{result}[/white]"
-            # )
+            self._print(
+                f"[bright_black][[/bright_black][green]{self.name}[/green][bright_black] →[/bright_black] "
+                f"[cyan]Client[/cyan][bright_black]][/bright_black] "
+                f"[white]{result}[/white]"
+            )
 
             return JSONResponse(
                 {
@@ -453,27 +491,30 @@ class SwiftAgent:
         """
         if type_ == ApplicationType.STANDARD:
             # Show query being sent
-            # self.console.print(
-            #     Panel(
-            #         f"[info]Query:[/info] {task}",
-            #         title=f"[ws]→ Sending to {self.name}[/ws]",
-            #         box=box.ROUNDED,
-            #         border_style="blue",
-            #     )
-            # )
+            self._print(
+                Panel(
+                    f"[info]Query:[/info] {task}",
+                    title=f"[ws]→ Sending to {self.name}[/ws]",
+                    box=box.ROUNDED,
+                    border_style="blue",
+                )
+            )
 
             # Show thinking animation while waiting
             # with Status("[ws]Agent thinking...[/ws]", spinner="dots") as status:
-            result = await self._process(query=task)
+            # result = await self._process(query=task)
 
-            # self.console.print(
-            #     Panel(
-            #         result,
-            #         title="[success]← Response Received[/success]",
-            #         border_style="green",
-            #         box=box.HEAVY,
-            #     )
-            # )
+            with self._status("Thinking..."):
+                result = await self._process(query=task)
+
+            self._print(
+                Panel(
+                    result,
+                    title="[success]← Response Received[/success]",
+                    border_style="green",
+                    box=box.HEAVY,
+                )
+            )
 
             return result
         elif type_ == ApplicationType.PERSISTENT:
