@@ -28,6 +28,7 @@ class Action:
         ] = None,
         strict: bool = True,
     ):
+
         self.func = func
         self.name = name or func.__name__
         self.description = description or func.__doc__ or ""

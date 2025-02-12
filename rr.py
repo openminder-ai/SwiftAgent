@@ -8,6 +8,8 @@ agent2 = SwiftAgent(
     fresh_install=False,
 )
 
+print(agent2._actions)
+
 # The agent2 now has all the same instructions, memory, actions, etc.
 # We can run it again, or do something else
 import asyncio
@@ -16,7 +18,7 @@ import asyncio
 async def main():
     print(agent2.name)  # Should show "WeatherAgentV2" now
     response = await agent2.run(
-        type_=ApplicationType.STANDARD, task="say hello to cows"
+        type_=ApplicationType.STANDARD, task="what is weather in boston?"
     )
 
 

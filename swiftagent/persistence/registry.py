@@ -4,6 +4,7 @@ import inspect
 import textwrap
 from typing import Optional, Dict, Any
 from pathlib import Path
+import re
 
 # from swiftagent.application.base import SwiftAgent
 
@@ -31,18 +32,12 @@ class AgentRegistry:
 
     @staticmethod
     def save_agent_profile(agent: Any) -> None:
-        """
-        Save the agent’s profile to disk. This includes:
-          - name, description, instructions
-          - action definitions (source code + metadata)
-          - memory configuration
-        Assumes agent.persist_path is set and is a directory.
-        """
         if not agent.persist_path:
             return  # no-op if no persist_path
 
         ensure_dir_exists(agent.persist_path)
 
+        # 1) Dump agent_profile.json
         profile_data = {
             "name": agent.name,
             "description": agent.description,
@@ -52,8 +47,6 @@ class AgentRegistry:
                 agent.working_memory and agent.long_term_memory
             ),
         }
-
-        # Write agent_profile.json
         with open(
             os.path.join(agent.persist_path, "agent_profile.json"),
             "w",
@@ -61,28 +54,66 @@ class AgentRegistry:
         ) as f:
             json.dump(profile_data, f, indent=2)
 
-        # Collect each Action's source code + metadata
+        # 2) Save actions
         actions_list = []
         for action_name, action_obj in agent._actions.items():
-            # We attempt to get the original function code via inspect
             try:
-                src_code = inspect.getsource(action_obj.func)
+                src_lines, _ = inspect.getsourcelines(action_obj.func)
+                # Combine them into a single string
+                src_code = "".join(src_lines)
             except Exception:
-                src_code = (
-                    "# Could not retrieve source code.\n"
-                    "# Possibly a built-in or dynamically created function.\n"
-                )
+                # If we can’t read the source for some reason, store a dummy
+                src_code = "# Could not retrieve source code.\n"
+
+            # -- NEW STEP: Transform any '@agent.action(...)' lines to '@action(...)' --
+            # 1) Insert 'from swiftagent.actions.wrapper import action' at the top, if not present
+            #    but only if we actually detect an @...action( in the snippet
+            insert_import = False
+            if re.search(r"@[a-zA-Z_]\w*\.action\s*\(", src_code):
+                insert_import = True
+
+            # 2) Replace all lines with '@X.action(...)' => '@action(...)'
+            def replace_agent_dot_action(match):
+                # match.group(1) is the 'X' in '@X.action'
+                # match.group(2) is everything inside the parentheses
+                args = match.group(2)
+                # Rebuild as '@action(...)'
+                return f"@action({args})"
+
+            # Example pattern:  @agent.action(...) or @my_agent.action(...)
+            pattern = r"@([a-zA-Z_]\w*)\.action\s*\((.*?)\)"
+            # Use DOTALL or something if you might have multiline
+            cleaned_code = re.sub(
+                pattern, replace_agent_dot_action, src_code, flags=re.DOTALL
+            )
+
+            if insert_import:
+                # If the snippet doesn’t already have this import,
+                # add it right at the top (unless there's a def line or docstring first).
+                # We'll do something naive: just prepend the line if not present.
+                if (
+                    "from swiftagent.actions.wrapper import action"
+                    not in cleaned_code
+                ):
+                    cleaned_code = (
+                        "from swiftagent.actions.wrapper import action\n\n"
+                        + cleaned_code
+                    )
+
+            # Dedent
+            cleaned_code = textwrap.dedent(cleaned_code)
+
             actions_list.append(
                 {
                     "name": action_name,
                     "description": action_obj.description,
                     "params": action_obj.params,
                     "strict": action_obj.strict,
-                    "source_code": textwrap.dedent(src_code),
+                    # store the final, cleaned code
+                    "source_code": cleaned_code,
                 }
             )
 
-        # Write actions.json
         with open(
             os.path.join(agent.persist_path, "actions.json"),
             "w",
@@ -90,14 +121,13 @@ class AgentRegistry:
         ) as f:
             json.dump(actions_list, f, indent=2)
 
-        # Memory config
+        # 3) Save memory config, etc. (same as your existing logic)
         mem_config = {}
         if agent.working_memory:
             mem_config["working_memory"] = {
                 "max_text_items": agent.working_memory.max_text_items,
                 "max_action_items": agent.working_memory.max_action_items,
             }
-            # We also store the current text/action items for rehydration:
             mem_config["working_memory_data"] = {
                 "text_history": [
                     {"item_type": m.item_type.value, "content": m.content}
@@ -114,27 +144,23 @@ class AgentRegistry:
                 "persist_directory": agent.long_term_memory.db.persist_directory,
             }
         if agent.semantic_memories:
-            # We store a dict: name -> location
-            # By default the underlying Chroma DB path is also needed
             semantic_info = {}
             for sm_name, sm_obj in agent.semantic_memories.items():
+                # store info about each semantic memory
+                path_ = None
+                try:
+                    path_ = (
+                        sm_obj.container_collection._collection._client.settings.chroma_db_impl._db_dir
+                    )
+                except:
+                    pass
                 semantic_info[sm_name] = {
                     "name": sm_obj.name,
                     "collection_name": sm_obj.container_collection.name,
-                    # The Chroma collection is probably inside some path,
-                    # but we store the location if we have it
-                    "persist_directory": (
-                        sm_obj.container_collection._collection._client.settings.chroma_db_impl._db_dir
-                        if hasattr(
-                            sm_obj.container_collection._collection._client,
-                            "settings",
-                        )
-                        else None
-                    ),
+                    "persist_directory": path_,
                 }
             mem_config["semantic_memories"] = semantic_info
 
-        # Write memory_config.json
         with open(
             os.path.join(agent.persist_path, "memory_config.json"),
             "w",

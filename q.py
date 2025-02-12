@@ -12,23 +12,23 @@ agent = SwiftAgent(
 )
 
 
-# add some action
-@agent.action(
-    name="say_hello",
-    description="Test action",
-    params={"msg": "Message to say"},
-)
-def say_hello(msg: str):
-    return f"Hello, I say: {msg}"
+@agent.action(name="get_weather", description="get weather for a city")
+async def get_weather_for_city(city: str) -> None:
+    if city.lower() == "herndon":
+        return 30
+    else:
+        return 89
 
 
 # Now run it in STANDARD mode to handle a single user task:
 import asyncio
 
+print(agent._actions)
+
 
 async def main():
     response = await agent.run(
-        type_=ApplicationType.STANDARD, task="Please say hello to the world!"
+        type_=ApplicationType.STANDARD, task="what is weather in herndon?"
     )
 
     # The agent is done and has auto-saved into ./my_agents/WeatherAgentV2
