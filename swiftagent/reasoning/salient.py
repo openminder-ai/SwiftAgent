@@ -145,14 +145,7 @@ If is_final=true, the conversation ends.
             actions = assistant_message.tool_calls
             if actions:
                 # Append the raw JSON from the LLM as an "assistant" message
-                messages.append(
-                    {
-                        "role": "assistant",
-                        "content": json.loads(response_json_str).get(
-                            "response"
-                        ),
-                    }
-                )
+                messages.append(completion.choices[0].message)
                 # Then process each tool call
                 for action_call in actions:
                     try:

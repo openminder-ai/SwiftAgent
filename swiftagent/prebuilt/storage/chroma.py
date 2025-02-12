@@ -30,6 +30,8 @@ class ChromaDatabase(VectorDatabase):
             path=persist_directory, settings=Settings(allow_reset=True)
         )
 
+        self.persist_directory = persist_directory
+
         if embedding_function is None:
             self._embedding_function = default_embedding_function
         else:

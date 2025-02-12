@@ -1,0 +1,14 @@
+{
+  "working_memory": {
+    "max_text_items": 10,
+    "max_action_items": 10
+  },
+  "working_memory_data": {
+    "text_history": [],
+    "action_history": []
+  },
+  "long_term_memory": {
+    "name": "WeatherAgentV2_ltm_db",
+    "persist_directory": "./chroma_ltm"
+  }
+}

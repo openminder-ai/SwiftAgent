@@ -20,6 +20,7 @@ import websockets
 # from websockets.legacy.server import WebSocketServerProtocol
 from websockets import ServerConnection as WebSocketServerProtocol
 import json
+import os
 
 from rich.console import Console
 from rich.theme import Theme
@@ -32,6 +33,8 @@ from swiftagent.styling.defaults import client_cli_default
 
 from swiftagent.memory.semantic import SemanticMemory
 
+from swiftagent.persistence.registry import AgentRegistry
+
 
 class SwiftAgent:
     def __init__(
@@ -43,6 +46,8 @@ class SwiftAgent:
         enable_salient_memory: bool = False,
         llm_name: str = "gpt-4o",
         verbose: bool = True,  # <-- added flag
+        persist_path: Optional[str] = None,
+        fresh_install: bool = False,
     ):
         self.name = name
         self.description = description
@@ -51,6 +56,12 @@ class SwiftAgent:
         # Collections to store actions/resources
         self._actions: dict[str, dict[str, Any]] = {}
         self._resources: dict[str, dict[str, Any]] = {}
+
+        self.persist_path = persist_path
+        self.fresh_install = fresh_install
+
+        # We track if the agent is fully loaded or not
+        self.loaded_from_registry = False
 
         self.reasoning = reasoning(name=self.name, instructions=instruction)
         self.llm_name = llm_name
@@ -68,17 +79,22 @@ class SwiftAgent:
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
         if enable_salient_memory:
-            self.working_memory = WorkingMemory(
-                max_text_items=10, max_action_items=10
-            )
-            self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
-            self.working_memory.long_term_memory = self.long_term_memory
+            # self.working_memory = WorkingMemory(
+            #     max_text_items=10, max_action_items=10
+            # )
+            # self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
+            # self.working_memory.long_term_memory = self.long_term_memory
 
+            # self.reasoning = SalientMemoryReasoning(
+            #     name=self.name,
+            #     instructions=self.instruction or "",
+            #     working_memory=self.working_memory,
+            #     long_term_memory=self.long_term_memory,
+            # )
+            self._create_or_replace_working_memory()
+            self._create_or_replace_long_term_memory(name=f"{self.name}_ltm_db")
             self.reasoning = SalientMemoryReasoning(
-                name=self.name,
-                instructions=self.instruction or "",
-                working_memory=self.working_memory,
-                long_term_memory=self.long_term_memory,
+                "test_stm", self.instruction
             )
         else:
             # fallback to plain BaseReasoning
@@ -87,6 +103,32 @@ class SwiftAgent:
             self.reasoning = BaseReasoning(
                 name=self.name, instructions=self.instruction
             )
+
+        if self.persist_path and not self.fresh_install:
+            if os.path.exists(self.persist_path):
+                AgentRegistry.load_agent_profile(self)
+                self.loaded_from_registry = True
+                # Now that we've loaded, if "enable_salient_memory" was in the profile,
+                # we might already have a working_memory & LTM set up by the loader.
+                # If not, they're created above anyway.
+            else:
+                # no directory yet, that means no existing profile
+                pass
+
+        # Done loading if any. The agent is now ready for usage.
+
+    ##############################
+    # Persistence / Registry Support
+    ##############################
+    def save(self) -> None:
+        """
+        Manually trigger a save of this agent’s profile to disk
+        (if self.persist_path is set).
+        """
+        if not self.persist_path:
+            # If user didn't specify persist_path, do nothing
+            return
+        AgentRegistry.save_agent_profile(self)
 
     def _print(self, message: str):
         """Helper to safely print only if verbose."""
@@ -112,6 +154,39 @@ class SwiftAgent:
                     pass
 
             return _NoOpCm()
+
+    def _create_or_replace_working_memory(
+        self, max_text_items: int = 10, max_action_items: int = 10
+    ) -> None:
+        """
+        Internal helper that sets a brand-new WorkingMemory on the agent,
+        discarding any older one. (Used by the registry loader.)
+        """
+        self.working_memory = WorkingMemory(
+            max_text_items=max_text_items,
+            max_action_items=max_action_items,
+            auto_evict=True,
+        )
+        if self.reasoning and isinstance(
+            self.reasoning, SalientMemoryReasoning
+        ):
+            self.reasoning.working_memory = self.working_memory
+
+    def _create_or_replace_long_term_memory(
+        self,
+        name: str = "long_term_memory",
+        persist_directory: str = "./chroma_ltm",
+    ) -> None:
+        """
+        Internal helper that sets a brand-new LongTermMemory on the agent,
+        discarding any older one. (Used by the registry loader.)
+        """
+        new_ltm = LongTermMemory(name=name, persist_directory=persist_directory)
+        self.long_term_memory = new_ltm
+        if self.reasoning and isinstance(
+            self.reasoning, SalientMemoryReasoning
+        ):
+            self.reasoning.long_term_memory = self.long_term_memory
 
     def action(
         self,
@@ -511,6 +586,9 @@ class SwiftAgent:
                     box=box.HEAVY,
                 )
             )
+
+            if self.persist_path:
+                self.save()
 
             return result
         elif type_ == ApplicationType.PERSISTENT:

@@ -5,7 +5,7 @@ import textwrap
 from typing import Optional, Dict, Any
 from pathlib import Path
 
-from swiftagent import SwiftAgent
+# from swiftagent.application.base import SwiftAgent
 
 from swiftagent.actions.wrapper import action as standalone_action_decorator
 
@@ -30,7 +30,7 @@ class AgentRegistry:
     """
 
     @staticmethod
-    def save_agent_profile(agent: "SwiftAgent") -> None:
+    def save_agent_profile(agent: Any) -> None:
         """
         Save the agent’s profile to disk. This includes:
           - name, description, instructions
@@ -143,7 +143,7 @@ class AgentRegistry:
             json.dump(mem_config, f, indent=2)
 
     @staticmethod
-    def load_agent_profile(agent: "SwiftAgent") -> None:
+    def load_agent_profile(agent: Any) -> None:
         """
         Load the agent’s profile from disk, re-constructing actions, memory, etc.
         This modifies the given agent *in-place*.

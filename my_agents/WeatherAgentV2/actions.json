@@ -1,0 +1,11 @@
+[
+  {
+    "name": "say_hello",
+    "description": "Test action",
+    "params": {
+      "msg": "Message to say"
+    },
+    "strict": true,
+    "source_code": "@agent.action(name=\"say_hello\", description=\"Test action\", params={\"msg\":\"Message to say\"})\ndef say_hello(msg: str):\n    return f\"Hello, I say: {msg}\"\n"
+  }
+]
