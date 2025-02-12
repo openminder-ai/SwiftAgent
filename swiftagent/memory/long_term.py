@@ -45,10 +45,6 @@ class LongTermMemory(Memory):
         """
         results = self.collection.search_by_text(phrase, k=number)
 
-        print(results)
-
-        return []
-
         return [
             f"[{r['metadata'].get('type', 'UNKNOWN')}] {r['text']}"
             for r in results
