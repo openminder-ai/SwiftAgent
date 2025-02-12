@@ -40,7 +40,7 @@ class SwiftAgent:
         description: str = "An agent that does stuff",
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
-        enable_salient_memory: bool = True,
+        enable_salient_memory: bool = False,
         llm_name: str = "gpt-4o",
         verbose: bool = True,  # <-- added flag
     ):

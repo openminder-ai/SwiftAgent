@@ -54,8 +54,10 @@ class SalientMemoryReasoning(BaseReasoning):
 
         # Gather relevant items from LTM
         ltm_snippets = []
+
         if self.long_term_memory and task.strip():
             ltm_snippets = self.long_term_memory.recall(task, number=3)
+            ltm_snippets = []
 
         # Gather any attached semantic memories
         semantic_snippets = []
@@ -146,7 +148,9 @@ If is_final=true, the conversation ends.
                 messages.append(
                     {
                         "role": "assistant",
-                        "content": response_json_str,
+                        "content": json.loads(response_json_str).get(
+                            "response"
+                        ),
                     }
                 )
                 # Then process each tool call
@@ -199,7 +203,9 @@ If is_final=true, the conversation ends.
                 messages.append(
                     {
                         "role": "assistant",
-                        "content": response_json_str,
+                        "content": json.loads(response_json_str).get(
+                            "response"
+                        ),
                     }
                 )
 

@@ -16,7 +16,7 @@ from swiftagent.prebuilt.storage.chroma import ChromaDatabase
 class SemanticMemory(Memory):
     def __init__(
         self,
-        name: str,
+        name: str = "default_semantic_memory",
         container_collection: VectorCollection | None = None,
         text_splitter: Any = text_splitter,
     ):

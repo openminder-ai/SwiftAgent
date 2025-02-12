@@ -8,6 +8,8 @@ import numpy as np
 from chromadb.utils import embedding_functions
 from swiftagent.core.embedder import SwiftEmbedder as EmbeddingFunction
 
+default_embedding_function = embedding_functions.DefaultEmbeddingFunction()
+
 
 class ChromaDatabase(VectorDatabase):
     def __init__(
@@ -29,9 +31,7 @@ class ChromaDatabase(VectorDatabase):
         )
 
         if embedding_function is None:
-            self._embedding_function = (
-                embedding_functions.DefaultEmbeddingFunction()
-            )
+            self._embedding_function = default_embedding_function
         else:
             self._embedding_function = embedding_function
 
@@ -227,11 +227,14 @@ class ChromaCollection(VectorCollection):
             k: Number of results to return
             include_text: Whether to include the text content in results
         """
+
         if not self._embedding_function:
             raise ValueError(
                 "No embedding function set at the collection level."
             )
+
         query_vector = self._embedding_function([text])[0]
+
         return self.search(query_vector, k, include_text=include_text)
 
     def delete_vectors(self, ids: List[str]) -> bool:
