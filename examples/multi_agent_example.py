@@ -3,7 +3,6 @@ from swiftagent.prebuilt.actions.duckduckgo import duckduckgo_actions
 from swiftagent.prebuilt.actions.yfinance import yfinance_actions
 
 from swiftagent.router.base import SwiftRouter
-from swiftagent.executor import SwiftExecutor
 
 import asyncio
 
@@ -110,31 +109,9 @@ async def main():
         query="Summarize analyst recommendations and share the latest news for NVDA. Use markdown, including tables.",
     )
 
-    _dict = {
-        "ReportAgent": summary_agent,
-        "WebAgent": web_agent,
-        "FinanceAgent": finance_agent,
-    }
-
-    executor = SwiftExecutor(_dict)
-
-    _response = await executor.execute_pipeline(response)
-
-    import json
-
-    with open("file1.json", "w+") as file:
-        file.write(json.dumps(response.to_dict(), indent=4))
-
-    from pprint import pprint
-
-    # pprint(_response)
-
-    with open("file2.json", "w+") as file:
-        file.write(json.dumps(_response, indent=4))
-
-    print(_response.get("report_agent_1"))
+    for x in list(response.tiers.values()):
+        print(f"Tasks for tier {x.tier_id}: {x.tasks}")
 
 
 if __name__ == "__main__":
-    # asyncio.run(main())
-    asyncio.run(main_test())
+    asyncio.run(main())

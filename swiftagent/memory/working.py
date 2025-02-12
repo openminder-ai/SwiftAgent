@@ -43,7 +43,7 @@ class WorkingMemory(Memory):
         self.text_history: List[MemoryItem] = []
         self.action_history: List[MemoryItem] = []
 
-        self.long_term_memory = None
+        self.long_term_memory: Optional[LongTermMemory] = None
 
     def ingest(self, information: str) -> "WorkingMemory":
         """
@@ -133,9 +133,8 @@ class WorkingMemory(Memory):
         """
         # Example: if "is_salient" -> store in LTM
         # This is just a stub. If you want to do it automatically, you can do:
-        #   if self.decide_salient_for_ltm(item.content):
-        #       self.long_term_memory.ingest_item(item)
-        pass
+        if self.decide_salient_for_ltm(item.content):
+            self.long_term_memory.ingest_item(item)
 
     async def evict_all(self, long_term_memory: LongTermMemory) -> None:
         """
@@ -156,11 +155,11 @@ class WorkingMemory(Memory):
     async def decide_salient_for_ltm(self, content: str) -> bool:
         """
         (Optional) Call an LLM or heuristic to check if `content` is important enough
-        to store in long-term memory. For now, always return `False` by default.
+        to store in long-term memory. For now, always return `True` by default.
 
         Example usage (pseudocode):
             # call your LLM with a short prompt:
             # "Is this item important? Return yes or no: content"
             # parse the response
         """
-        return False
+        return True
