@@ -43,6 +43,8 @@ class WorkingMemory(Memory):
         self.text_history: List[MemoryItem] = []
         self.action_history: List[MemoryItem] = []
 
+        self.long_term_memory = None
+
     def ingest(self, information: str) -> "WorkingMemory":
         """
         For compliance with the base Memory interface:

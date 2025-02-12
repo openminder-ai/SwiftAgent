@@ -67,14 +67,14 @@ class SwiftAgent:
 
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
-        # [1] Setup short-term memory + long-term memory if enabled
         if enable_salient_memory:
             self.working_memory = WorkingMemory(
                 max_text_items=10, max_action_items=10
             )
-            # Give it a reference to LTM if you want eviction to store automatically
             self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
             self.working_memory.long_term_memory = self.long_term_memory
+
+            from swiftagent.reasoning.salient import SalientMemoryReasoning
 
             self.reasoning = SalientMemoryReasoning(
                 name=self.name,
@@ -83,9 +83,7 @@ class SwiftAgent:
                 long_term_memory=self.long_term_memory,
             )
         else:
-            # fallback to plain reasoning
-            from swiftagent.reasoning.base import BaseReasoning
-
+            # fallback to plain BaseReasoning
             self.working_memory = None
             self.long_term_memory = None
             self.reasoning = BaseReasoning(
