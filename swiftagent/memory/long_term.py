@@ -43,9 +43,12 @@ class LongTermMemory(Memory):
         Recall both text and action items from the vector store that are similar to `phrase`.
         Returns up to `number` best matches (text or action).
         """
-        results = self.collection.search_by_text(
-            phrase, k=number, include_text=True
-        )
+        results = self.collection.search_by_text(phrase, k=number)
+
+        print(results)
+
+        return []
+
         return [
             f"[{r['metadata'].get('type', 'UNKNOWN')}] {r['text']}"
             for r in results

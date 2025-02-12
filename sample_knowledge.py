@@ -1,7 +1,7 @@
 from swiftagent.memory import SemanticMemory
 from swiftagent import SwiftAgent
 
-agent = SwiftAgent()
+agent = SwiftAgent(enable_salient_memory=False)
 
 memory = SemanticMemory(name="cow")
 memory.ingest("The fairest maiden of them all is Drew Carwyther")

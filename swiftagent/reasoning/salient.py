@@ -7,10 +7,8 @@ import inspect
 from swiftagent.reasoning.base import BaseReasoning
 from swiftagent.llm.adapter import LLMAdapter
 from swiftagent.actions.formatter import ActionFormatter
-from swiftagent.actions.base import Action
 from swiftagent.memory.working import WorkingMemory
 from swiftagent.memory.long_term import LongTermMemory
-from swiftagent.memory.semantic import SemanticMemory
 
 
 class SalientMemoryReasoning(BaseReasoning):
@@ -32,7 +30,7 @@ class SalientMemoryReasoning(BaseReasoning):
         super().__init__(name=name, instructions=instructions)
         self.working_memory = working_memory
         self.long_term_memory = long_term_memory
-        self.formatter = ActionFormatter()  # For listing available actions
+        # self.formatter = ActionFormatter()  # For listing available actions
 
     async def flow(
         self, task: str = "", llm: str = "gpt-4o-mini", **kwargs
@@ -46,19 +44,22 @@ class SalientMemoryReasoning(BaseReasoning):
 
         Returns the list of all messages used or generated in final conversation.
         """
+        print("a")
 
         # Gather short-term memory (we might or might not use it in the prompt)
         st_texts = []
         st_actions = []
-        if self.working_memory:
-            st_texts = self.working_memory.get_recent_text(5)
-            st_actions = self.working_memory.get_recent_actions(5)
+        # if self.working_memory:
+        # st_texts = self.working_memory.get_recent_text(5)
+        # st_actions = self.working_memory.get_recent_actions(5)
 
         # Gather relevant items from LTM
         ltm_snippets = []
         if self.long_term_memory and task.strip():
             ltm_snippets = self.long_term_memory.recall(task, number=3)
+            # print(ltm_snippets)
 
+        print("r")
         # Gather any attached semantic memories
         semantic_snippets = []
         for sem_mem in self.semantic_memories:
@@ -83,11 +84,13 @@ class SalientMemoryReasoning(BaseReasoning):
             ]
         )
 
+        print("o")
+
         # Build system message: describe your instructions + available tools
         available_tools_str = self.formatter.format_actions(
             list(self.actions.values())
         )
-        system_message = f"""You are an AI agent named '{self.name}'.
+        system_message = f"""You are an AI agent named Bob.
 Your instructions: {self.instructions or '(no instructions)'}
 You have these tools available:
 {available_tools_str}
@@ -102,6 +105,8 @@ Produce output in JSON:
 }}
 If is_final=true, the conversation ends. 
 """
+
+        print("p")
 
         # [1] Store the user query in short-term memory
         if self.working_memory and task.strip():
@@ -141,6 +146,8 @@ If is_final=true, the conversation ends.
             assistant_message = completion.choices[0].message
             response_json_str = assistant_message.content  # LLM's JSON string
 
+            print("q")
+
             # Check if LLM called any tools
             actions = assistant_message.tool_calls
             if actions:
@@ -169,6 +176,7 @@ If is_final=true, the conversation ends.
 
                     # Execute the tool
                     action_obj = self.actions.get(action_name)
+
                     if not action_obj:
                         tool_result = f"Error: No tool '{action_name}' found"
                     else:

@@ -74,8 +74,6 @@ class SwiftAgent:
             self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
             self.working_memory.long_term_memory = self.long_term_memory
 
-            from swiftagent.reasoning.salient import SalientMemoryReasoning
-
             self.reasoning = SalientMemoryReasoning(
                 name=self.name,
                 instructions=self.instruction or "",
