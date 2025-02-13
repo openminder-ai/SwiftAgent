@@ -1,5 +1,6 @@
 # swiftagent/memory/working.py
-
+import time
+from datetime import datetime
 from typing import List, Optional, Any
 from enum import Enum
 from dataclasses import dataclass, field
@@ -10,120 +11,109 @@ from .long_term import LongTermMemory
 
 class WorkingMemory(Memory):
     """
-    Short-term (working) memory that stores recent text or action events for the agent.
+    Short-term (working) memory that stores recent items (both TEXT and ACTION)
+    in a single timeline: `self.history`.
 
-    - Holds two separate lists:
-       1) `text_history`   (List[MemoryItem]) for TextMemory
-       2) `action_history` (List[MemoryItem]) for ActionMemory
+    Each entry is a MemoryItem, containing:
+      - item_type: TEXT or ACTION
+      - content: The actual string
+      - timestamp: Local time in "hh:mm:ss dd/mm/yy" format
 
-    - Each has a configurable max size. Once the capacity is exceeded,
-      the oldest item is evicted.
-
-    - Upon eviction, we optionally call `decide_salient_for_ltm` to see if the item
-      should be put into `LongTermMemory`.
+    We maintain a max capacity (`max_items`). If we exceed capacity,
+    the oldest item is evicted. You can optionally store evicted items into LTM.
     """
 
     def __init__(
         self,
-        max_text_items: int = 10,
-        max_action_items: int = 10,
+        max_items: int = 20,
         auto_evict: bool = True,
     ):
         """
         Args:
-            max_text_items: Maximum number of text items to store in short-term memory.
-            max_action_items: Maximum number of action items to store in short-term memory.
+            max_items: Maximum number of items to store in short-term memory (both text & actions).
             auto_evict: If True, automatically evict oldest items once capacity is hit.
         """
-        self.max_text_items = max_text_items
-        self.max_action_items = max_action_items
+        self.max_items = max_items
         self.auto_evict = auto_evict
 
-        # Internal lists for text and actions
-        self.text_history: List[MemoryItem] = []
-        self.action_history: List[MemoryItem] = []
+        # Unified list of memory items. Each item is a MemoryItem.
+        self.history: List[MemoryItem] = []
 
+        # Optionally link to a LongTermMemory, so that when we evict,
+        # we can push them to LTM if they are "salient".
         self.long_term_memory: Optional[LongTermMemory] = None
 
     def ingest(self, information: str) -> "WorkingMemory":
         """
         For compliance with the base Memory interface:
         This method just ingests a plain string as 'TEXT' by default.
-        If you need more granular calls, use `add_text` or `add_action`.
+        If you need more granular calls, use add_item() directly.
         """
-        self.add_text(information)
+        self.add_item(MemoryItemType.TEXT, information)
         return self
 
     def recall(self, phrase: str, number: int = 5) -> List[Any]:
         """
-        For compliance with base Memory interface:
-        In short-term memory, 'recall' might just return the *most recent*
-        items that contain the phrase (very naive) or everything if phrase is empty.
+        Return up to `number` memory items (TEXT or ACTION) that match `phrase`.
+        Here, we do a naive substring match in the `content`.
 
-        By default, returns up to `number` items from the text side.
-        (You could expand to also recall actions, or unify both.)
+        (You can customize this logic however you like.)
         """
         if not phrase:
-            # Return the last `number` text items
-            return [m.content for m in self.text_history[-number:]]
+            # Return the last `number` items if no phrase given
+            return self.history[-number:]
 
-        # Return the last matching items
+        # Otherwise search from the end
         matching = []
-        for item in reversed(self.text_history):
+        for item in reversed(self.history):
             if phrase.lower() in item.content.lower():
-                matching.append(item.content)
+                matching.append(item)
             if len(matching) >= number:
                 break
         return matching
 
+    def add_item(self, item_type: MemoryItemType, content: str):
+        """
+        Add a new MemoryItem (TEXT or ACTION) into the unified history,
+        automatically tagging it with a local-time timestamp.
+        """
+        # Generate local-time timestamp in "hh:mm:ss dd/mm/yy"
+        local_timestamp = datetime.now().strftime("%H:%M:%S %d/%m/%y")
+
+        item = MemoryItem(
+            item_type=item_type,
+            content=content,
+            timestamp=local_timestamp,
+        )
+        self.history.append(item)
+
+        if self.auto_evict:
+            self._maybe_evict_items()
+
     def add_text(self, text_content: str) -> None:
         """
-        Add a text entry to short-term memory.
-        If `auto_evict` is True, we evict if we're over capacity.
+        Convenience method to add a text item to memory.
         """
-        item = MemoryItem(item_type=MemoryItemType.TEXT, content=text_content)
-        self.text_history.append(item)
-        self._maybe_evict_text_items()
+        self.add_item(MemoryItemType.TEXT, text_content)
 
     def add_action(self, action_content: str) -> None:
         """
-        Add an action entry to short-term memory.
-        If `auto_evict` is True, we evict if we're over capacity.
+        Convenience method to add an action item to memory.
         """
-        item = MemoryItem(
-            item_type=MemoryItemType.ACTION, content=action_content
-        )
-        self.action_history.append(item)
-        self._maybe_evict_action_items()
+        self.add_item(MemoryItemType.ACTION, action_content)
 
-    def get_recent_text(self, limit: int = 5) -> List[str]:
+    def get_recent_items(self, limit: int = 5) -> List[MemoryItem]:
         """
-        Return the last `limit` text items.
+        Return the last `limit` items from the unified memory stream.
         """
-        return [m.content for m in self.text_history[-limit:]]
+        return self.history[-limit:]
 
-    def get_recent_actions(self, limit: int = 5) -> List[str]:
+    def _maybe_evict_items(self):
         """
-        Return the last `limit` action items.
+        Evict oldest items if over capacity.
         """
-        return [m.content for m in self.action_history[-limit:]]
-
-    def _maybe_evict_text_items(self):
-        """
-        Evict the oldest text items if over capacity.
-        """
-        while len(self.text_history) > self.max_text_items:
-            oldest_item = self.text_history.pop(0)
-            # Optionally call logic to store in LTM
-            self._handle_eviction(oldest_item)
-
-    def _maybe_evict_action_items(self):
-        """
-        Evict the oldest action items if over capacity.
-        """
-        while len(self.action_history) > self.max_action_items:
-            oldest_item = self.action_history.pop(0)
-            # Optionally call logic to store in LTM
+        while len(self.history) > self.max_items:
+            oldest_item = self.history.pop(0)
             self._handle_eviction(oldest_item)
 
     def _handle_eviction(self, item: MemoryItem):
@@ -131,35 +121,22 @@ class WorkingMemory(Memory):
         Called whenever an item is evicted from short-term memory.
         By default does nothing, but you can connect it to LTM if you like.
         """
-        # Example: if "is_salient" -> store in LTM
-        # This is just a stub. If you want to do it automatically, you can do:
-        if self.decide_salient_for_ltm(item.content):
+        if self.long_term_memory and self.decide_salient_for_ltm(item.content):
             self.long_term_memory.ingest_item(item)
 
     async def evict_all(self, long_term_memory: LongTermMemory) -> None:
         """
         Explicitly evict all short-term items (e.g. at end of conversation or agent reset).
-        Optionally store them into LTM if they are salient.
+        If you want them in LTM, decide here.
         """
-        for item in self.text_history:
-            # Decide if it should be stored
-            if await self.decide_salient_for_ltm(item.content):
-                long_term_memory.ingest_item(item)
-        for item in self.action_history:
-            if await self.decide_salient_for_ltm(item.content):
-                long_term_memory.ingest_item(item)
-
-        self.text_history.clear()
-        self.action_history.clear()
+        while self.history:
+            oldest_item = self.history.pop(0)
+            if await self.decide_salient_for_ltm(oldest_item.content):
+                long_term_memory.ingest_item(oldest_item)
 
     async def decide_salient_for_ltm(self, content: str) -> bool:
         """
         (Optional) Call an LLM or heuristic to check if `content` is important enough
-        to store in long-term memory. For now, always return `True` by default.
-
-        Example usage (pseudocode):
-            # call your LLM with a short prompt:
-            # "Is this item important? Return yes or no: content"
-            # parse the response
+        to store in long-term memory. For now, always True by default.
         """
         return True

@@ -45,19 +45,34 @@ class SalientMemoryReasoning(BaseReasoning):
         Returns the list of all messages used or generated in final conversation.
         """
 
-        # Gather short-term memory (we might or might not use it in the prompt)
-        st_texts = []
-        st_actions = []
+        st_items = []
         if self.working_memory:
-            st_texts = self.working_memory.get_recent_text(5)
-            st_actions = self.working_memory.get_recent_actions(5)
+            st_items = self.working_memory.get_recent_items(5)
+            # Each item is MemoryItem with fields: item_type, content, timestamp
 
-        # Gather relevant items from LTM
-        ltm_snippets = []
+        # Convert them to text lines. For example:
+        st_context_lines = []
+        for it in st_items:
+            # e.g. "[12:34:56 12/02/25] (TEXT) The user asked about Herndon weather"
+            stamp = it.timestamp or "???"
+            st_context_lines.append(
+                f"[{stamp}] ({it.item_type.value}) {it.content}"
+            )
 
+        # 2) Gather relevant items from LTM
+        ltm_structs = []
         if self.long_term_memory and task.strip():
-            ltm_snippets = self.long_term_memory.recall(task, number=3)
-            ltm_snippets = []
+            ltm_structs = self.long_term_memory.recall(task, number=3)
+            # ltm_structs is a list of dict, e.g.
+            # [ {"text": "...", "type": "...", "timestamp": "..."}, ...]
+
+        # Convert them to lines
+        ltm_context_lines = []
+        for obj in ltm_structs:
+            ts = obj.get("timestamp", "???")
+            typ = obj.get("type", "UNKNOWN")
+            txt = obj.get("text", "")
+            ltm_context_lines.append(f"[{ts}] ({typ}) {txt}")
 
         # Gather any attached semantic memories
         semantic_snippets = []
@@ -72,12 +87,10 @@ class SalientMemoryReasoning(BaseReasoning):
         # Combine them into a single "memory_context" if you want
         memory_context = "\n".join(
             [
-                "## Recent Short-Term Text:",
-                *st_texts,
-                "\n## Recent Short-Term Actions:",
-                *st_actions,
+                "## Recent Short-Term Memory:",
+                *st_items,
                 "\n## Long-Term Memory (Relevant Snippets):",
-                *ltm_snippets,
+                *ltm_context_lines,
                 "\n## Semantic Memory (Relevant Snippets):",
                 *semantic_snippets,
             ]

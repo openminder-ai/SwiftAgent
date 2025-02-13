@@ -21,5 +21,7 @@ async def main():
         type_=ApplicationType.STANDARD, task="what is weather in boston?"
     )
 
+    print(agent2.working_memory.history)
+
 
 asyncio.run(main())

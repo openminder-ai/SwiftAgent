@@ -157,18 +157,18 @@ class SwiftAgent:
 
             return _NoOpCm()
 
-    def _create_or_replace_working_memory(
-        self, max_text_items: int = 10, max_action_items: int = 10
-    ) -> None:
+    def _create_or_replace_working_memory(self, max_items=15) -> None:
         """
-        Internal helper that sets a brand-new WorkingMemory on the agent,
-        discarding any older one. (Used by the registry loader.)
+        Now that we have a single unified memory, we can ignore one of these or combine them.
+        Let’s combine them by just summing them up, or default to 20.
         """
+        from swiftagent.memory.working import WorkingMemory
+
+        total_max = max_items
         self.working_memory = WorkingMemory(
-            max_text_items=max_text_items,
-            max_action_items=max_action_items,
-            auto_evict=True,
+            max_items=total_max, auto_evict=True
         )
+
         if self.reasoning and isinstance(
             self.reasoning, SalientMemoryReasoning
         ):
@@ -590,6 +590,7 @@ class SwiftAgent:
             )
 
             if self.persist_path:
+                print("saving")
                 self.save()
 
             return result

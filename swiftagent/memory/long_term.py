@@ -1,20 +1,13 @@
-# swiftagent/memory/long_term.py
-
 from typing import List, Any
 
-from .base import Memory
-
+from .base import Memory, MemoryItem, MemoryItemType
 from swiftagent.prebuilt.storage.chroma import ChromaDatabase, ChromaCollection
-
-from .base import MemoryItem, MemoryItemType
 
 
 class LongTermMemory(Memory):
     """
     Long-term memory that persists both text and action items in a vector store.
-
-    By default, we store them in a single Chroma collection, with `metadata["type"]`
-    = "TEXT" or "ACTION". You can also keep them separate if you prefer.
+    We store `type` and `timestamp` in the Chroma metadata so we can reconstruct them.
     """
 
     def __init__(
@@ -31,36 +24,28 @@ class LongTermMemory(Memory):
     def ingest(self, information: str) -> "LongTermMemory":
         """
         For minimal compliance with `Memory` base class:
-        This will store a plain text string as a TEXT item.
-        If you want to store actions, use `ingest_item` or `ingest_action`.
+        This will store a plain text string as a TEXT item (with no timestamp).
         """
-        item = MemoryItem(item_type=MemoryItemType.TEXT, content=information)
+        item = MemoryItem(
+            item_type=MemoryItemType.TEXT,
+            content=information,
+            # If you want a timestamp here, you can generate a local one,
+            # or rely on caller passing one. E.g.
+            # timestamp=datetime.now().strftime("%H:%M:%S %d/%m/%y"),
+        )
         self.ingest_item(item)
         return self
-
-    def recall(self, phrase: str, number: int = 5) -> List[Any]:
-        """
-        Recall both text and action items from the vector store that are similar to `phrase`.
-        Returns up to `number` best matches (text or action).
-        """
-
-        results = self.collection.search_by_text(phrase, k=number)
-
-        return [
-            f"[{r['metadata'].get('type', 'UNKNOWN')}] {r['text']}"
-            for r in results
-        ]
 
     def ingest_item(self, item: MemoryItem):
         """
         Ingest a MemoryItem (either TEXT or ACTION).
         We'll store `item.content` as the main text,
-        plus `type` in the metadata for filtering if needed.
+        plus `type` and `timestamp` in the metadata.
         """
         text = item.content
         metadata = {
-            "type": item.item_type.value
-            # you could also store timestamps, etc.
+            "type": item.item_type.value,
+            "timestamp": item.timestamp,  # <-- store local-time stamp if present
         }
         self.collection.add_texts([text], [metadata])
 
@@ -80,28 +65,52 @@ class LongTermMemory(Memory):
         )
         self.ingest_item(item)
 
-    def recall_actions(self, phrase: str, number: int = 5) -> List[str]:
+    def recall(self, phrase: str, number: int = 5) -> List[dict]:
+        """
+        Recall both text and action items from the vector store that match `phrase`.
+        Returns up to `number` best matches. Instead of returning a plain string,
+        we return a dictionary with text, type, timestamp, etc.
+        """
+        results = self.collection.search_by_text(
+            phrase, k=number, include_text=True
+        )
+        # Construct a more structured return
+        output = []
+        for r in results:
+            meta = r["metadata"]
+            output.append(
+                {
+                    "text": r["text"],
+                    "type": meta.get("type", "UNKNOWN"),
+                    "timestamp": meta.get("timestamp", "???"),
+                    # you can also add "score" or "distance" if you want
+                }
+            )
+        return output
+
+    def recall_actions(self, phrase: str, number: int = 5) -> List[dict]:
         """
         Specifically recall 'ACTION' items from LTM that match `phrase`.
+        We'll filter after the search_by_text.
         """
-        # We could do a custom method that filters only items with metadata["type"] == "ACTION"
-        # The simplest approach in Chroma is to do:
-        #   .query(where={"type": "ACTION"})
-        # But the `ChromaCollection` class does not (by default) expose "where" in search_by_text.
-        # If you want that, you can directly do a .query(...) with a custom param.
-        # For demonstration, we do a normal search_by_text, then filter locally:
         results = self.collection.search_by_text(
             phrase, k=number * 2, include_text=True
         )
         filtered = []
         for r in results:
             if r["metadata"].get("type") == "ACTION":
-                filtered.append(r["text"])
+                filtered.append(
+                    {
+                        "text": r["text"],
+                        "type": "ACTION",
+                        "timestamp": r["metadata"].get("timestamp", "???"),
+                    }
+                )
                 if len(filtered) >= number:
                     break
         return filtered
 
-    def recall_text(self, phrase: str, number: int = 5) -> List[str]:
+    def recall_text(self, phrase: str, number: int = 5) -> List[dict]:
         """
         Specifically recall 'TEXT' items from LTM that match `phrase`.
         """
@@ -111,7 +120,13 @@ class LongTermMemory(Memory):
         filtered = []
         for r in results:
             if r["metadata"].get("type") == "TEXT":
-                filtered.append(r["text"])
+                filtered.append(
+                    {
+                        "text": r["text"],
+                        "type": "TEXT",
+                        "timestamp": r["metadata"].get("timestamp", "???"),
+                    }
+                )
                 if len(filtered) >= number:
                     break
         return filtered

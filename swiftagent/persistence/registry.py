@@ -66,23 +66,27 @@ class AgentRegistry:
         ) as f_act:
             json.dump(actions_meta, f_act, indent=2)
 
-        # 3) Save memory config (like before)
+        # 3) Save memory config
         mem_config = {}
         if agent.working_memory:
+            # new approach: single unified list
             mem_config["working_memory"] = {
-                "max_text_items": agent.working_memory.max_text_items,
-                "max_action_items": agent.working_memory.max_action_items,
+                "max_items": agent.working_memory.max_items,
             }
-            mem_config["working_memory_data"] = {
-                "text_history": [
-                    {"item_type": m.item_type.value, "content": m.content}
-                    for m in agent.working_memory.text_history
-                ],
-                "action_history": [
-                    {"item_type": m.item_type.value, "content": m.content}
-                    for m in agent.working_memory.action_history
-                ],
-            }
+
+            # Gather data from the unified list
+            wm_history_data = []
+            for m in agent.working_memory.history:
+                wm_history_data.append(
+                    {
+                        "item_type": m.item_type.value,
+                        "content": m.content,
+                        "timestamp": m.timestamp,
+                    }
+                )
+
+            mem_config["working_memory_data"] = {"history": wm_history_data}
+
         if agent.long_term_memory:
             mem_config["long_term_memory"] = {
                 "name": agent.long_term_memory.name,
@@ -91,17 +95,21 @@ class AgentRegistry:
         if agent.semantic_memories:
             sem_dict = {}
             for sm_name, sm_obj in agent.semantic_memories.items():
+                col_name = sm_obj.container_collection.name
+                # In your code, you might need to carefully check if the underlying DB is a Chroma client
+                # and get the directory differently. Shown below is typical if you used the ChromaDatabase wrapper.
+                # If it doesn't apply, you can skip or adapt.
+                try:
+                    path_ = (
+                        sm_obj.container_collection._collection._client.settings.chroma_db_impl._db_dir
+                    )
+                except:
+                    path_ = "./chroma_db"
+
                 sem_dict[sm_name] = {
                     "name": sm_obj.name,
-                    "collection_name": sm_obj.container_collection.name,
-                    "persist_directory": (
-                        sm_obj.container_collection._collection._client.settings.chroma_db_impl._db_dir
-                        if hasattr(
-                            sm_obj.container_collection._collection._client,
-                            "settings",
-                        )
-                        else None
-                    ),
+                    "collection_name": col_name,
+                    "persist_directory": path_,
                 }
             mem_config["semantic_memories"] = sem_dict
 
@@ -134,32 +142,28 @@ class AgentRegistry:
         agent.llm_name = data["llm_name"]
         enable_salient = data.get("enable_salient_memory", False)
 
-        # 2) Load each action from .pkl
+        # 2) Load actions
         if os.path.exists(actions_path):
             with open(actions_path, "r", encoding="utf-8") as f_act:
                 actions_meta = json.load(f_act)
+
+            import cloudpickle
+            from swiftagent.actions.base import Action
 
             for meta in actions_meta:
                 a_name = meta["name"]
                 a_desc = meta["description"]
                 a_params = meta["params"]
                 a_strict = meta["strict"]
-                pkl_path = meta["pickle_path"]  # e.g. "actions/get_weather.pkl"
+                pkl_path = meta["pickle_path"]
 
                 full_path = os.path.join(agent.persist_path, pkl_path)
                 if not os.path.exists(full_path):
                     print(f"Action pickle not found: {full_path}")
                     continue
 
-                # Un-pickle
-                import cloudpickle
-
                 with open(full_path, "rb") as f_pk:
                     loaded_func = cloudpickle.load(f_pk)
-
-                # Now we create a new Action wrapper with the loaded function
-                from swiftagent.actions.base import Action
-                from swiftagent.actions.base import Action
 
                 action_obj = Action(
                     func=loaded_func,
@@ -168,45 +172,44 @@ class AgentRegistry:
                     params=a_params,
                     strict=a_strict,
                 )
-                # Attach it
                 agent.add_action(a_name, action_obj)
 
-        # 3) Load memory config (like before)
+        # 3) Load memory config
         if os.path.exists(mem_config_path):
             with open(mem_config_path, "r", encoding="utf-8") as f_mem:
                 memconf = json.load(f_mem)
 
             if "working_memory" in memconf:
+                from swiftagent.memory.working import WorkingMemory
+
                 wconf = memconf["working_memory"]
+
+                # Create a new WorkingMemory with the new unified approach
                 agent._create_or_replace_working_memory(
-                    max_text_items=wconf.get("max_text_items", 10),
-                    max_action_items=wconf.get("max_action_items", 10),
+                    max_items=wconf.get("max_items", 15),
                 )
+
+                # Now fill in the history from working_memory_data
                 data_ = memconf.get("working_memory_data", {})
-                text_history = data_.get("text_history", [])
-                action_history = data_.get("action_history", [])
-                for t in text_history:
-                    from swiftagent.memory.base import (
-                        MemoryItem,
-                        MemoryItemType,
-                    )
+                if "history" in data_:
+                    for item_data in data_["history"]:
+                        # For backward-compat, if something was stored differently,
+                        # you could do an if-check. We'll assume correct shape:
+                        mtype_str = item_data.get("item_type", "TEXT")
+                        mtype = MemoryItemType(mtype_str)
+                        content = item_data.get("content", "")
+                        timestamp = item_data.get("timestamp", "")
 
-                    item = MemoryItem(
-                        MemoryItemType(t["item_type"]), t["content"]
-                    )
-                    agent.working_memory.text_history.append(item)
-                for a in action_history:
-                    from swiftagent.memory.base import (
-                        MemoryItem,
-                        MemoryItemType,
-                    )
-
-                    item = MemoryItem(
-                        MemoryItemType(a["item_type"]), a["content"]
-                    )
-                    agent.working_memory.action_history.append(item)
+                        mem_item = MemoryItem(
+                            item_type=mtype,
+                            content=content,
+                            timestamp=timestamp,
+                        )
+                        agent.working_memory.history.append(mem_item)
 
             if "long_term_memory" in memconf:
+                from swiftagent.memory.long_term import LongTermMemory
+
                 ltm_ = memconf["long_term_memory"]
                 agent._create_or_replace_long_term_memory(
                     name=ltm_["name"],

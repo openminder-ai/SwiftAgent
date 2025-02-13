@@ -1,27 +1,28 @@
 {
   "working_memory": {
-    "max_text_items": 10,
-    "max_action_items": 10
+    "max_items": 15
   },
   "working_memory_data": {
-    "text_history": [
+    "history": [
       {
         "item_type": "TEXT",
-        "content": "[User Query] what is weather in herndon?"
+        "content": "[User Query] what is weather in herndon?",
+        "timestamp": "00:19:50 13/02/25"
       },
-      {
-        "item_type": "TEXT",
-        "content": "ActionResult(get_weather): 30"
-      },
-      {
-        "item_type": "TEXT",
-        "content": "[Assistant Final Answer] The weather in Herndon is currently 30 degrees."
-      }
-    ],
-    "action_history": [
       {
         "item_type": "ACTION",
-        "content": "Action: get_weather | Args: {'city': 'Herndon'}"
+        "content": "Action: get_weather | Args: {'city': 'Herndon'}",
+        "timestamp": "00:19:50 13/02/25"
+      },
+      {
+        "item_type": "TEXT",
+        "content": "ActionResult(get_weather): 30",
+        "timestamp": "00:19:50 13/02/25"
+      },
+      {
+        "item_type": "TEXT",
+        "content": "[Assistant Final Answer] The weather in Herndon is currently 30\u00b0C.",
+        "timestamp": "00:19:51 13/02/25"
       }
     ]
   },
