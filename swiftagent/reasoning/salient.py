@@ -88,7 +88,7 @@ class SalientMemoryReasoning(BaseReasoning):
         memory_context = "\n".join(
             [
                 "## Recent Short-Term Memory:",
-                *st_items,
+                *st_context_lines,
                 "\n## Long-Term Memory (Relevant Snippets):",
                 *ltm_context_lines,
                 "\n## Semantic Memory (Relevant Snippets):",

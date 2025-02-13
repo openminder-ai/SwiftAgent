@@ -6,6 +6,7 @@ agent2 = SwiftAgent(
     name="WhateverNameHere",  # This will get overridden once loaded
     persist_path="./my_agents/WeatherAgentV2",
     fresh_install=False,
+    enable_salient_memory=True,
 )
 
 print(agent2._actions)
@@ -18,7 +19,7 @@ import asyncio
 async def main():
     print(agent2.name)  # Should show "WeatherAgentV2" now
     response = await agent2.run(
-        type_=ApplicationType.STANDARD, task="what is weather in boston?"
+        type_=ApplicationType.STANDARD, task="what is the weather in boston?"
     )
 
     print(agent2.working_memory.history)
