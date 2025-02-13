@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "name": "get_weather",
+    "description": "get weather for a city",
+    "params": {},
+    "strict": true,
+    "pickle_path": "actions/get_weather.pkl"
+  }
+]
