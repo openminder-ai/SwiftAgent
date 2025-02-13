@@ -33,5 +33,7 @@ async def main():
 
     # The agent is done and has auto-saved into ./my_agents/WeatherAgentV2
 
+    print(agent.reasoning.working_memory.text_history)
+
 
 asyncio.run(main())

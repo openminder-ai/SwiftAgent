@@ -4,8 +4,26 @@
     "max_action_items": 10
   },
   "working_memory_data": {
-    "text_history": [],
-    "action_history": []
+    "text_history": [
+      {
+        "item_type": "TEXT",
+        "content": "[User Query] what is weather in herndon?"
+      },
+      {
+        "item_type": "TEXT",
+        "content": "ActionResult(get_weather): 30"
+      },
+      {
+        "item_type": "TEXT",
+        "content": "[Assistant Final Answer] The weather in Herndon is currently 30 degrees."
+      }
+    ],
+    "action_history": [
+      {
+        "item_type": "ACTION",
+        "content": "Action: get_weather | Args: {'city': 'Herndon'}"
+      }
+    ]
   },
   "long_term_memory": {
     "name": "WeatherAgentV2_ltm_db",

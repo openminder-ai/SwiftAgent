@@ -63,7 +63,7 @@ class SwiftAgent:
         # We track if the agent is fully loaded or not
         self.loaded_from_registry = False
 
-        self.reasoning = reasoning(name=self.name, instructions=instruction)
+        # self.reasoning = reasoning(name=self.name, instructions=instruction)
         self.llm_name = llm_name
 
         self._server: Optional[Starlette] = None
@@ -91,11 +91,13 @@ class SwiftAgent:
             #     working_memory=self.working_memory,
             #     long_term_memory=self.long_term_memory,
             # )
-            self._create_or_replace_working_memory()
-            self._create_or_replace_long_term_memory(name=f"{self.name}_ltm_db")
             self.reasoning = SalientMemoryReasoning(
                 "test_stm", self.instruction
             )
+
+            self._create_or_replace_working_memory()
+            self._create_or_replace_long_term_memory(name=f"{self.name}_ltm_db")
+
         else:
             # fallback to plain BaseReasoning
             self.working_memory = None
