@@ -10,7 +10,7 @@ license = {file = "LICENSE"}
 name = "swiftagent"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
-version = "0.0.2"
+version = "0.0.3"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -42,6 +42,11 @@ exclude = [
     "guides/**",
     "venv/",
     "venv/**",
+    "documentation_examples_yongfeng/",
+    "documentation_examples_yongfeng/*",
+    ".env",
+    "requirements-*.txt",
+    ".pre-commit-config.yaml"
 ]
 
 [tool.hatch.metadata.hooks.requirements_txt]
