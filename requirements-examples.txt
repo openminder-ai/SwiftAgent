@@ -3,3 +3,4 @@ arxiv
 swiftagent
 yfinance
 duckduckgo-search
+exa_py

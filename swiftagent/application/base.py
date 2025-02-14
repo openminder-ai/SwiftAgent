@@ -251,7 +251,7 @@ class SwiftAgent:
         Adds all actions from an ActionSet to this agent.
         """
         for action_instance in actionset.actions:
-            self.add_action(action_instance)
+            self.add_action(action_instance.name, action_instance)
 
     def resource(
         self,
