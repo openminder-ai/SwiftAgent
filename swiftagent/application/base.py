@@ -590,8 +590,8 @@ class SwiftAgent:
                 )
             )
 
-            if self.persist_path:
-                self.save()
+            # if self.persist_path:
+            #     self.save()
 
             return result
         elif type_ == ApplicationType.PERSISTENT:

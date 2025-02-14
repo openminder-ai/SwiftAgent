@@ -10,3 +10,4 @@ chromadb
 sentence_transformers
 markitdown
 platformdirs
+psutil

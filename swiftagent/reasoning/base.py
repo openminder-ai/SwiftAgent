@@ -57,7 +57,7 @@ class BaseReasoning:
         self,
         memory: None = None,
         task: str = "",
-        llm: str = "gpt-4o-mini",
+        llm: str = "gpt-4o",
     ):
         system_message = (
             f"You are an AI agent{'.' if self.instructions is None else ', with instructions '+self.instructions} "
