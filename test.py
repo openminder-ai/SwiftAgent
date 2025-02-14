@@ -7,9 +7,21 @@ agent = SwiftAgent(
 )
 agent.add_actionset(exa_actions)
 
-# import asyncio
+from swiftagent.memory import SemanticMemory
 
-# async def main():
-#     await agent.run(task='what happened in the news today?')
+m = SemanticMemory("sm1")
 
-# asyncio.run(main())
+m.container_collection.clear()
+
+m.ingest(["the brown fox wore red shoes", "the brown fox wore leather shoes"])
+
+agent.add_semantic_memory_section(m)
+
+import asyncio
+
+
+async def main():
+    await agent.run(task="what shoes did the brown fox wear?")
+
+
+asyncio.run(main())

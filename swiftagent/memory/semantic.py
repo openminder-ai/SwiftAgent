@@ -29,7 +29,12 @@ class SemanticMemory(Memory):
         self.text_splitter = text_splitter
         self.name = name
 
-    def ingest(self, information: str):
+    def ingest(self, information: str | list[str]):
+        if type(information) == list:
+            for i in information:
+                self.ingest(i)
+            return self
+
         information_type = determine_type(information)
 
         if not information_type == "plain_string":

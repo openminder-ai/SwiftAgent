@@ -64,10 +64,6 @@ class AgentRegistry:
                 }
             )
 
-        from pprint import pprint
-
-        pprint(actions_meta)
-
         # Write out the consolidated actions.json
         with open(
             os.path.join(agent.persist_path, "actions.json"),
