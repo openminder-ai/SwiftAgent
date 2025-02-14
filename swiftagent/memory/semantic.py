@@ -1,3 +1,4 @@
+from swiftagent.constants import CACHE_DIR
 from swiftagent.core.storage import VectorCollection
 
 from swiftagent.memory.base import Memory
@@ -22,8 +23,8 @@ class SemanticMemory(Memory):
     ):
         if container_collection is None:
             container_collection = ChromaDatabase(
-                "./chroma_db"
-            ).get_or_create_collection("semantic_memory_default")
+                str(CACHE_DIR / "chroma_db")
+            ).get_or_create_collection(f"semantic_memory_{name}")
         self.container_collection = container_collection
         self.text_splitter = text_splitter
         self.name = name

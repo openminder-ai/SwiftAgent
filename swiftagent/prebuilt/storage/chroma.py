@@ -8,13 +8,15 @@ import numpy as np
 from chromadb.utils import embedding_functions
 from swiftagent.core.embedder import SwiftEmbedder as EmbeddingFunction
 
+from swiftagent.constants import CACHE_DIR
+
 default_embedding_function = embedding_functions.DefaultEmbeddingFunction()
 
 
 class ChromaDatabase(VectorDatabase):
     def __init__(
         self,
-        persist_directory: str = "./chroma_db",
+        persist_directory: Optional[str] = None,
         embedding_function: Optional[EmbeddingFunction | Any] = None,
     ):
         """
@@ -26,6 +28,9 @@ class ChromaDatabase(VectorDatabase):
                 - embed(text: str) -> np.ndarray
                 - embedm(texts: List[str]) -> List[np.ndarray]
         """
+        if persist_directory is None:
+            persist_directory = str(CACHE_DIR / "chroma_db")
+
         self._client = chromadb.PersistentClient(
             path=persist_directory, settings=Settings(allow_reset=True)
         )
@@ -78,6 +83,7 @@ class ChromaCollection(VectorCollection):
         self,
         collection: chromadb.Collection,
         embedding_function: Optional[EmbeddingFunction | Any] = None,
+        path: Optional[str] = None,
     ):
         """
         Initialize ChromaDB collection wrapper.
@@ -89,6 +95,10 @@ class ChromaCollection(VectorCollection):
         self._collection = collection
         self._embedding_function = embedding_function
         self._dimension: Optional[int] = None
+
+        if path is None:
+            path = str(CACHE_DIR / "chroma_db")
+        self.path = path
 
     def add_vectors(
         self,

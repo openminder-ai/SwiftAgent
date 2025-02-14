@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from .base import Memory, MemoryItemType, MemoryItem
 from .long_term import LongTermMemory
 
+from swiftagent.core.storage import VectorCollection
+
 
 class WorkingMemory(Memory):
     """

@@ -6,7 +6,7 @@ from swiftagent.application.types import ApplicationType
 agent = SwiftAgent(
     name="WeatherAgentV2",
     instruction="You are a weather-savvy agent",
-    persist_path="./my_agents/WeatherAgentV2",
+    # persist_path="./my_agents/WeatherAgentV2",
     fresh_install=True,  # Means we ignore any existing data
     enable_salient_memory=True,
 )
@@ -22,8 +22,6 @@ async def get_weather_for_city(city: str) -> None:
 
 # Now run it in STANDARD mode to handle a single user task:
 import asyncio
-
-print(agent._actions)
 
 
 async def main():

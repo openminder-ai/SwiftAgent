@@ -1,7 +1,0 @@
-{
-  "name": "WeatherAgentV2",
-  "description": "An agent that does stuff",
-  "instruction": "You are a weather-savvy agent",
-  "llm_name": "gpt-4o",
-  "enable_salient_memory": true
-}

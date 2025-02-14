@@ -3,7 +3,13 @@ import json
 import cloudpickle  # or dill
 from pathlib import Path
 
+from swiftagent.constants import CACHE_DIR
 from swiftagent.memory.base import MemoryItem, MemoryItemType
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from swiftagent.application import SwiftAgent
 
 
 def ensure_dir_exists(path: str):
@@ -12,7 +18,7 @@ def ensure_dir_exists(path: str):
 
 class AgentRegistry:
     @staticmethod
-    def save_agent_profile(agent):
+    def save_agent_profile(agent: "SwiftAgent"):
         if not agent.persist_path:
             return
 
@@ -90,7 +96,7 @@ class AgentRegistry:
         if agent.long_term_memory:
             mem_config["long_term_memory"] = {
                 "name": agent.long_term_memory.name,
-                "persist_directory": agent.long_term_memory.db.persist_directory,
+                "persist_directory": agent.long_term_memory.collection.path,
             }
         if agent.semantic_memories:
             sem_dict = {}
@@ -104,7 +110,7 @@ class AgentRegistry:
                         sm_obj.container_collection._collection._client.settings.chroma_db_impl._db_dir
                     )
                 except:
-                    path_ = "./chroma_db"
+                    path_ = str(CACHE_DIR / "chroma_db")
 
                 sem_dict[sm_name] = {
                     "name": sm_obj.name,
@@ -121,7 +127,7 @@ class AgentRegistry:
             json.dump(mem_config, f_mem, indent=2)
 
     @staticmethod
-    def load_agent_profile(agent):
+    def load_agent_profile(agent: "SwiftAgent"):
         if not agent.persist_path:
             return
 
@@ -141,6 +147,16 @@ class AgentRegistry:
         agent.instruction = data["instruction"]
         agent.llm_name = data["llm_name"]
         enable_salient = data.get("enable_salient_memory", False)
+
+        if enable_salient:
+            from swiftagent.reasoning.salient import SalientMemoryReasoning
+
+            agent.reasoning = SalientMemoryReasoning(
+                name=agent.name,
+                instructions=agent.instruction,
+                working_memory=agent.working_memory,
+                long_term_memory=agent.long_term_memory,
+            )
 
         # 2) Load actions
         if os.path.exists(actions_path):
@@ -213,7 +229,6 @@ class AgentRegistry:
                 ltm_ = memconf["long_term_memory"]
                 agent._create_or_replace_long_term_memory(
                     name=ltm_["name"],
-                    persist_directory=ltm_["persist_directory"],
                 )
 
             if "semantic_memories" in memconf:
@@ -221,7 +236,9 @@ class AgentRegistry:
                 from swiftagent.memory.semantic import SemanticMemory
 
                 for sm_name, sm_data in memconf["semantic_memories"].items():
-                    path_ = sm_data.get("persist_directory", "./chroma_db")
+                    path_ = sm_data.get(
+                        "persist_directory", str(CACHE_DIR / "chroma_db")
+                    )
                     col_name = sm_data["collection_name"]
                     db = ChromaDatabase(persist_directory=path_)
                     col = db.get_or_create_collection(name=col_name)

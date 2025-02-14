@@ -1,7 +1,10 @@
-from typing import List, Any
+from typing import List, Any, Optional
 
 from .base import Memory, MemoryItem, MemoryItemType
+from swiftagent.core.storage import VectorCollection
 from swiftagent.prebuilt.storage.chroma import ChromaDatabase, ChromaCollection
+
+from swiftagent.constants import CACHE_DIR
 
 
 class LongTermMemory(Memory):
@@ -13,13 +16,16 @@ class LongTermMemory(Memory):
     def __init__(
         self,
         name: str = "long_term_memory",
-        persist_directory: str = "./chroma_ltm",
+        container_collection: Optional[VectorCollection] = None,
     ):
         self.name = name
-        self.db = ChromaDatabase(persist_directory=persist_directory)
-        self.collection: ChromaCollection = self.db.get_or_create_collection(
-            name=name
-        )
+
+        if container_collection is None:
+            container_collection = ChromaDatabase(
+                str(CACHE_DIR / "chroma_db")
+            ).get_or_create_collection(name)
+
+        self.collection = container_collection
 
     def ingest(self, information: str) -> "LongTermMemory":
         """

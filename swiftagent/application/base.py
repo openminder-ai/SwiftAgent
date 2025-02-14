@@ -4,9 +4,14 @@ from typing import Callable, Any, Optional, Type, overload
 from swiftagent.actions.set import ActionSet
 from swiftagent.application.types import ApplicationType
 from swiftagent.actions.base import Action
+
+
+from swiftagent.reasoning.base import BaseReasoning
+from swiftagent.reasoning.salient import SalientMemoryReasoning
+
 from swiftagent.memory.long_term import LongTermMemory
 from swiftagent.memory.working import WorkingMemory
-from swiftagent.reasoning.base import BaseReasoning
+
 from starlette.requests import Request
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
@@ -17,21 +22,23 @@ from logging.handlers import RotatingFileHandler
 from swiftagent.core.utilities import hash_url
 import websockets
 
-# from websockets.legacy.server import WebSocketServerProtocol
+from swiftagent.constants import CACHE_DIR
+from pathlib import Path
+
 from websockets import ServerConnection as WebSocketServerProtocol
 import json
 import os
 
+from swiftagent.styling.defaults import client_cli_default
+
 from rich.console import Console
-from rich.theme import Theme
 from rich.status import Status
 from rich.panel import Panel
 from rich import box
 
-from swiftagent.reasoning.salient import SalientMemoryReasoning
-from swiftagent.styling.defaults import client_cli_default
 
 from swiftagent.memory.semantic import SemanticMemory
+
 
 from swiftagent.persistence.registry import AgentRegistry
 
@@ -79,18 +86,6 @@ class SwiftAgent:
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
         if enable_salient_memory:
-            # self.working_memory = WorkingMemory(
-            #     max_text_items=10, max_action_items=10
-            # )
-            # self.long_term_memory = LongTermMemory(name=f"{self.name}_ltm_db")
-            # self.working_memory.long_term_memory = self.long_term_memory
-
-            # self.reasoning = SalientMemoryReasoning(
-            #     name=self.name,
-            #     instructions=self.instruction or "",
-            #     working_memory=self.working_memory,
-            #     long_term_memory=self.long_term_memory,
-            # )
             self.reasoning = SalientMemoryReasoning(
                 "test_stm", self.instruction
             )
@@ -106,7 +101,15 @@ class SwiftAgent:
                 name=self.name, instructions=self.instruction
             )
 
-        if self.persist_path and not self.fresh_install:
+        if self.persist_path:
+            _load_path = str(Path(self.persist_path))
+        else:
+            _load_path = str(CACHE_DIR / f"{self.name}")
+
+        self.persist_path = _load_path
+
+        if not self.fresh_install:
+
             if os.path.exists(self.persist_path):
                 AgentRegistry.load_agent_profile(self)
                 self.loaded_from_registry = True
@@ -116,6 +119,17 @@ class SwiftAgent:
             else:
                 # no directory yet, that means no existing profile
                 pass
+
+        # if self.persist_path and not self.fresh_install:
+        #     if os.path.exists(self.persist_path):
+        #         AgentRegistry.load_agent_profile(self)
+        #         self.loaded_from_registry = True
+        #         # Now that we've loaded, if "enable_salient_memory" was in the profile,
+        #         # we might already have a working_memory & LTM set up by the loader.
+        #         # If not, they're created above anyway.
+        #     else:
+        #         # no directory yet, that means no existing profile
+        #         pass
 
         # Done loading if any. The agent is now ready for usage.
 
@@ -158,15 +172,8 @@ class SwiftAgent:
             return _NoOpCm()
 
     def _create_or_replace_working_memory(self, max_items=15) -> None:
-        """
-        Now that we have a single unified memory, we can ignore one of these or combine them.
-        Let’s combine them by just summing them up, or default to 20.
-        """
-        from swiftagent.memory.working import WorkingMemory
-
-        total_max = max_items
         self.working_memory = WorkingMemory(
-            max_items=total_max, auto_evict=True
+            max_items=max_items, auto_evict=True
         )
 
         if self.reasoning and isinstance(
@@ -177,13 +184,12 @@ class SwiftAgent:
     def _create_or_replace_long_term_memory(
         self,
         name: str = "long_term_memory",
-        persist_directory: str = "./chroma_ltm",
     ) -> None:
         """
         Internal helper that sets a brand-new LongTermMemory on the agent,
         discarding any older one. (Used by the registry loader.)
         """
-        new_ltm = LongTermMemory(name=name, persist_directory=persist_directory)
+        new_ltm = LongTermMemory(name=name)
         self.long_term_memory = new_ltm
         if self.reasoning and isinstance(
             self.reasoning, SalientMemoryReasoning
@@ -563,7 +569,6 @@ class SwiftAgent:
                     - websocket_uri: URI of the websocket server
         """
         if type_ == ApplicationType.STANDARD:
-            # Show query being sent
             self._print(
                 Panel(
                     f"[info]Query:[/info] {task}",
@@ -572,10 +577,6 @@ class SwiftAgent:
                     border_style="blue",
                 )
             )
-
-            # Show thinking animation while waiting
-            # with Status("[ws]Agent thinking...[/ws]", spinner="dots") as status:
-            # result = await self._process(query=task)
 
             with self._status("Thinking..."):
                 result = await self._process(query=task)
@@ -590,7 +591,6 @@ class SwiftAgent:
             )
 
             if self.persist_path:
-                print("saving")
                 self.save()
 
             return result

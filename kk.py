@@ -19,7 +19,8 @@ import asyncio
 async def main():
     print(agent2.name)  # Should show "WeatherAgentV2" now
     response = await agent2.run(
-        type_=ApplicationType.STANDARD, task="what is the weather in boston?"
+        type_=ApplicationType.STANDARD,
+        task="what question did I ask you a couple of seconds ago?",
     )
 
     print(agent2.working_memory.history)
