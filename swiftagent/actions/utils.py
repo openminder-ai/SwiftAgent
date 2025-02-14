@@ -7,33 +7,53 @@ from typing import (
     Dict,
     Any,
     Optional,
+    List,
 )
 
 
-def python_type_to_json_type(
-    py_type,
-):
+def python_type_to_json_schema(py_type: Any) -> dict:
     """
-    Converts a Python type annotation into a JSON Schema type.
-    E.g. str -> 'string', int -> 'integer', float -> 'number', bool -> 'boolean', ...
-    You can expand or customize as needed.
+    Converts a Python type annotation into a JSON Schema fragment.
+
+    Supports basic types, unions (including Optionals), lists and dictionaries.
     """
-    if get_origin(py_type) is Union:
-        # Usually means optional or union of different types
+    origin = get_origin(py_type)
+
+    if origin is Union:
+        # Filter out NoneType for optionals
         args = [t for t in get_args(py_type) if t is not type(None)]
         if len(args) == 1:
-            return python_type_to_json_type(args[0])
+            return python_type_to_json_schema(args[0])
         else:
-            # More complex union: you could return multiple "type" variants
-            # e.g. {"anyOf": [...]} or default to "string"
-            return "string"
-    if py_type == str:
-        return "string"
+            # For more complex unions, we return an anyOf list of possible schemas.
+            return {"anyOf": [python_type_to_json_schema(arg) for arg in args]}
+
+    elif origin in (list, List):
+        # For lists, use "array" type with items schema.
+        # If no type is specified, default to string items.
+        item_types = get_args(py_type)
+        item_type = item_types[0] if item_types else str
+        return {"type": "array", "items": python_type_to_json_schema(item_type)}
+
+    elif origin in (dict, Dict):
+        # For dictionaries, we assume keys are strings (as per JSON standard).
+        # We support a value type if provided, defaulting to string otherwise.
+        args = get_args(py_type)
+        value_type = args[1] if len(args) > 1 else str
+        return {
+            "type": "object",
+            "additionalProperties": python_type_to_json_schema(value_type),
+        }
+
+    # Base types mapping
+    elif py_type == str:
+        return {"type": "string"}
     elif py_type == int:
-        return "integer"
+        return {"type": "integer"}
     elif py_type == float:
-        return "number"
+        return {"type": "number"}
     elif py_type == bool:
-        return "boolean"
-    # Fallback
-    return "string"
+        return {"type": "boolean"}
+
+    # Fallback to string if type is unknown
+    return {"type": "string"}

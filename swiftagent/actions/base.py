@@ -10,7 +10,8 @@ from functools import (
 import inspect
 
 from swiftagent.actions.utils import (
-    python_type_to_json_type,
+    # python_type_to_json_type,
+    python_type_to_json_schema,
 )
 
 
@@ -41,38 +42,36 @@ class Action:
         # Create the wrapped function with metadata
         self.wrapped_func = self._create_wrapper()
 
-    def _build_metadata(
-        self,
-    ) -> dict:
-        """Builds the function metadata including JSON schema."""
+    def _build_metadata(self) -> dict:
+        """
+        Builds the function metadata including JSON Schema for OpenAI function calls.
+
+        Iterates over the function parameters, converting Python type annotations to
+        JSON Schema fragments. Descriptions and required parameters are incorporated.
+        """
         sig = inspect.signature(self.func)
         type_hints = get_type_hints(self.func)
         props = {}
         required_fields = []
 
-        for (
-            param_name,
-            param,
-        ) in sig.parameters.items():
+        for param_name, param in sig.parameters.items():
             if param_name == "self":
                 continue
 
-            param_type = type_hints.get(
-                param_name,
-                str,
-            )
-            json_type = self._python_type_to_json_type(param_type)
+            # Get the annotated type or default to str if not provided.
+            param_type = type_hints.get(param_name, str)
+            # Convert the Python type to a JSON Schema fragment.
+            schema = python_type_to_json_schema(param_type)
 
+            # Attach a description to the schema.
             param_description = self.params.get(
-                param_name,
-                f"Parameter {param_name}",
+                param_name, f"Parameter {param_name}"
             )
+            schema["description"] = param_description
 
-            props[param_name] = {
-                "type": json_type,
-                "description": param_description,
-            }
+            props[param_name] = schema
 
+            # Mark parameter as required if it has no default value.
             if param.default is inspect.Parameter.empty:
                 required_fields.append(param_name)
 
@@ -110,11 +109,11 @@ class Action:
         wrapper.__action_metadata__ = self._metadata
         return wrapper
 
-    @staticmethod
-    def _python_type_to_json_type(
-        py_type: type,
-    ) -> str:
-        return python_type_to_json_type(py_type)
+    # @staticmethod
+    # def _python_type_to_json_type(
+    #     py_type: type,
+    # ) -> str:
+    #     return python_type_to_json_type(py_type)
 
     @property
     def metadata(
