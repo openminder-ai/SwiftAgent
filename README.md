@@ -15,6 +15,7 @@
 ## Table of contents
 
 - [What is SwiftAgent?](#what-is-swiftagent)
+
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Key Concepts](#key-concepts)
@@ -87,67 +88,35 @@ asyncio.run(main())
 
 ### Agents
 
-Agents are the core of any agentic system, representing a (semi-)autonomous unit that is capable of reasoning and taking actions to accomplish a goal. Agents are capable of using actions, having memory, and utilizing reasoning patterns.
+SwiftAgent's core is the *agent*—an autonomous unit designed to reason, act, and learn. Each agent is stateful and persistent, storing its own memory, action registry, and reasoning parameters. This makes them inherently “human-like” in that they can remember past interactions and adapt over time.
 
-### Actions
+## Actions
+Actions are the building blocks of an agent’s functionality. You can:
 
-Actions are utilities or functionalities that an agent can perform. Much like we carry out everyday tasks — such as walking, talking, or using a computer—agents can execute actions like checking the weather, writing a Google Doc, or retrieving current stock prices.
+Decorate Functions: Register them as actions with clear descriptions and parameter metadata.
+Group Actions: Use action sets to bundle related functionalities (e.g., finance actions, search tools).
 
-SwiftAgent provides two primary methods to define actions:
+## Memory & Persistence
+SwiftAgent is the first framework where agents come equipped with:
 
----
+Working Memory: For short-term storage and immediate context.
+Long-Term Memory: Persistently stores important interactions, actions, and insights.
+Semantic Memory: Uses vector storage (e.g., ChromaDB) to recall contextually relevant information.
+Persistent Profiles: AgentRegistry ensures that all agent configurations, actions, and memories are saved and reloaded seamlessly.
 
-#### 1. Using the `SwiftAgent.action` Decorator
+## Multi-Agent Collaboration
+Complex tasks often require multiple agents. SwiftAgent supports:
 
-This method allows you to register an action directly by decorating a function with the agent's own `action` decorator. Here’s how you can do it:
+Tiered Execution Pipelines: Using the SwiftRouter and SwiftExecutor, agents can execute tasks in parallel or sequentially, passing outputs between tiers.
+Hosted Mode via SwiftSuite: Agents and clients can interact in real time over websockets, enabling rich, distributed workflows.
 
-```python
-from swiftagent import SwiftAgent
+## Reasoning & Orchestration
+At the heart of every agent is its reasoning engine. SwiftAgent provides:
 
-# Initialize your agent
-agent = SwiftAgent()
+BaseReasoning: A fundamental LLM-driven reasoning module.
+SalientMemoryReasoning: A specialized variant that retains only essential tool calls and final responses, reducing noise while preserving key insights.
+LLM Integration: Out-of-the-box support for OpenAI’s API (and other LLM adapters) to power dynamic, multi-step reasoning.
 
-# Define and register an action using the agent's decorator
-@agent.action(description="Description her")
-def sample_action(param1: str):
-    # Implementation of your action here
-    pass
-```
-
----
-
-#### 2. Using the Standalone `action` Decorator with `add_action`
-
-Alternatively, you can create an action using the standalone `action` decorator and then register it with your agent by calling the `add_action` method. This approach offers flexibility, especially if you prefer to separate the action definition from the agent's configuration, or want to create reusable actions.
-
-```python
-from swiftagent import SwiftAgent
-from swiftagent.actions import action
-
-# Initialize your agent
-agent = SwiftAgent()
-
-# Define the action using the standalone decorator
-@action(description="Description here")
-def sample_action(param1: str):
-    # Implementation of your action here
-    pass
-
-# Add the action to your agent
-agent.add_action(sample_action)
-```
-
----
-
-Both methods are fully supported in SwiftAgent! 
-
-### Persistence & State
-
-A key differentiator of SwiftAgent is that it's agents by default are capable of being both persistent and stateful out of the box.
-
-### Multi Agent Collaboration
-
-SwiftAgent also features SwiftSuites,
 
 ## How SwiftAgent Compares
 
