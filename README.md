@@ -10,39 +10,25 @@
 
 <h3>
 
-<!-- TODO -->
-<!-- [Homepage](https://www.crewai.com/) | [Documentation](https://docs.crewai.com/) | [Chat with Docs](https://chatg.pt/DWjSBZn) | [Examples](https://github.com/crewAIInc/crewAI-examples) | [Discourse](https://community.crewai.com) -->
-
-</h3>
-
-<!-- TODO -->
-<!-- [![GitHub Repo stars](https://img.shields.io/github/stars/joaomdmoura/crewAI)](https://github.com/crewAIInc/crewAI)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) -->
-
 </div>
 
 ## Table of contents
 
-- [Why SwiftAgent?](#why-swiftagent)
+- [What is SwiftAgent?](#what-is-swiftagent)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Key Features](#key-features)
-- [Understanding Suites](#understanding-suites)
-- [Examples](#examples)
-  - [Weather Agent](#weather-agent)
-<!-- - [Connecting Your Crew to a Model](#connecting-your-crew-to-a-model)
-- [How CrewAI Compares](#how-crewai-compares)
-- [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
-- [Contribution](#contribution)
-- [Telemetry](#telemetry)
-- [License](#license) -->
+- [Key Concepts](#key-concepts)
+  - [Agents]
+  - [Actions]
+  - [Memory]
+  - [Suites]
+- [Comparisons](#comparisons)
 
-## Why SwiftAgent?
-SwiftAgent is designed to be truly simple yet remarkably flexible, offering a streamlined experience unlike more complex alternatives such as CrewAI or Autogen. With a minimal learning curve, SwiftAgent lets you get started quickly, enabling you to build robust agents without the overhead of unnecessary complexity. Its clear, concise API is inspired by popular web frameworks like FastAPI and Flask, making it especially accessible for web developers and software engineers alike.
 
-One of SwiftAgent’s core strengths is its persistence by design. Unlike standard, function-based solutions, SwiftAgent’s agents are built to remain active over time and handle multiple queries in parallel. This design ensures that your agents are not only responsive but also capable of managing ongoing interactions and complex workflows without requiring additional scaffolding.
 
-Furthermore, SwiftAgent supports multi-agent collaboration, allowing multiple agents to work together seamlessly to tackle intricate tasks. Combined with its integrated detailed analytics and replay capabilities, you can monitor every interaction, gain deep insights into your agents’ decision processes, and even replay queries for debugging or performance optimization.
+## What is SwiftAgent?
+In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research—they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into reality. It provides developers with an out-of-the-box, production-ready infrastructure that meets the demands of modern enterprise environments, ensuring high performance and seamless integration from concept to deployment.
+
 
 ## Installation
 
@@ -52,72 +38,56 @@ pip install swiftagent
 
 ## Getting Started
 
-### Step 1: Create an Agent Instance
+Let's build a real-time Weather Agent!
 
-Start by importing and instantiating a SwiftAgent. You can create either a named or unnamed agent:
+### Step 1: Install dependencies
+
+We rely on the `python_weather` package to get real time weather for a city, so download it using
+
+```bash
+python -m pip install python_weather
+```
+
+### Step 2: Create an Agent Instance
+
+Start by importing and instantiating a SwiftAgent.
 
 ```python
 from swiftagent import SwiftAgent
+import python_weather # for later action
+import asyncio # for running async functions directly
 
-# Unnamed agent (for simple use cases)
-agent = SwiftAgent()
-
-# Named agent (required for persistent/suite modes)
-agent = SwiftAgent(name="MyCustomAgent")
+weather_agent = SwiftAgent(name="WeatherAgent")
 ```
 
-### Step 2: Define Actions
+### Step 3: Define Actions
 
-Actions are the core functionality of your agent. Use the `@agent.action` decorator to define what your agent can do:
+Actions are the core functionality of your agent, providing external abilities to agents. Use the `@SwiftAgent.action` decorator around any function to define what your agent can do:
 
 ```python
-@agent.action(description="A human-readable description of what this action does")
-async def my_custom_action(param1: str, param2: int) -> str:
-    # Your action logic here
-    return result
+@weather_agent.action(description="get weather for a city")
+async def get_weather_for_city(city: str) -> None:
+    async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
+        weather = await client.get(city)
+        return weather.temperature
 ```
 
-### Step 3: Choose a Running Mode
+### Step 4: Run the Agent
 
-SwiftAgent supports three running modes, each suited for different use cases:
-
-#### Standard Mode (One-off Tasks)
-```python
-await agent.run(task="Your task description here")
-```
-
-#### Persistent Mode (Long-running Service)
-```python
-from swiftagent.application.types import ApplicationType
-await agent.run(type_=ApplicationType.PERSISTENT)
-```
-
-#### Suite Mode (Multiple Agents)
-```python
-from swiftagent.suite import SwiftSuite
-suite = SwiftSuite(name="MySuite", agents=[agent1, agent2])
-await suite.setup(host="localhost", port=8001)
-```
-
-### Step 4: Connect to Your Agent
-
-For standard mode, the agent processes the task immediately and returns.
-
-For persistent or suite modes, use SwiftClient to send tasks:
+Agents are asynchronous since it allows for high scalability and performance. To directly run an asynchronous function, we use the built-in Python `asyncio` module.
 
 ```python
-from swiftagent.client import SwiftClient
+async def main():
+    await agent.run('What is the weather in boston?')
 
-client = SwiftClient()
-
-await client.send(
-    "Your task description",
-    agent_name="MyCustomAgent"
-)
+asyncio.run(main())
 ```
 
+## Key Concepts
 
-## Key Features
+### Agents
+
+Agents are the core of any agentic system, representing a (semi-)autonomous unit that is capable of reasoning and taking actions to accomplish a goal. Agents are capable of using actions, having memory, and utilizing reasoning patterns.
 
 ### Actions
 
@@ -171,9 +141,23 @@ agent.add_action(sample_action)
 
 Both methods are fully supported in SwiftAgent! 
 
-## Understanding Suites
-TBD
+### Persistence & State
 
-## Examples
+A key differentiator of SwiftAgent is that it's agents by default are capable of being both persistent and stateful out of the box.
 
-### Weather Agent
+### Multi Agent Collaboration
+
+SwiftAgent also features SwiftSuites,
+
+## How SwiftAgent Compares
+
+
+
+## Contributing
+
+Contributions are always welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for more information.
+
+## License
+
+CrewAI is released under the [MIT License](./LICENSE).
+

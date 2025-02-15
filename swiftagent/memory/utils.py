@@ -1,7 +1,8 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import re
 from urllib.parse import urlparse
-from markitdown import MarkItDown
+
+# from markitdown import MarkItDown
 
 from typing import Literal
 
@@ -12,7 +13,7 @@ _text_splitter = RecursiveCharacterTextSplitter(
     is_separator_regex=False,
 )
 
-_markitdown = MarkItDown()
+# _markitdown = MarkItDown()
 
 
 def text_splitter(text: str) -> list[str]:
@@ -67,4 +68,5 @@ def source_to_markdown(source: str):
     """
     Light wrapper around Microsoft's Markitdown
     """
-    return _markitdown.convert(source).text_content
+    # return _markitdown.convert(source).text_content
+    return ""

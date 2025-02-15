@@ -8,8 +8,6 @@ from swiftagent.actions import (
 
 from swiftagent.actions.formatter import ActionFormatter
 
-from swiftagent.memory.semantic import SemanticMemory
-
 import json
 
 import inspect
@@ -24,7 +22,9 @@ class BaseReasoning:
             Action,
         ] = {}
 
-        self.semantic_memories: list[SemanticMemory] = []
+        # self.semantic_memories: list[SemanticMemory] = []
+        self.semantic_memories = []
+
         self.resources = {}
         self.formatter = ActionFormatter()
 
@@ -47,7 +47,9 @@ class BaseReasoning:
         return self
 
     def add_semantic_memory_section(
-        self, semantic_memory_section: SemanticMemory
+        # self, semantic_memory_section: SemanticMemory
+        self,
+        semantic_memory_section,
     ):
         self.semantic_memories.append(semantic_memory_section)
 

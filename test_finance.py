@@ -1,5 +1,10 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from swiftagent import SwiftAgent
 from swiftagent.prebuilt.actions import YFinanceActionSet
+
 
 agent = SwiftAgent(
     name="Finance1Agent",
