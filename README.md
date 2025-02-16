@@ -156,5 +156,5 @@ Contributions are always welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for m
 
 ## License
 
-CrewAI is released under the [MIT License](./LICENSE).
+SwiftAgent is released under the [MIT License](./LICENSE).
 
