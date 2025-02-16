@@ -30,6 +30,32 @@
 ## What is SwiftAgent?
 In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research—they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into reality. It provides developers with an out-of-the-box, production-ready infrastructure that meets the demands of modern enterprise environments, ensuring high performance and seamless integration from concept to deployment.
 
+Human-Like Memory & Learning
+Persistent Memory:
+Just like humans remember past experiences, SwiftAgent’s agents store their interactions across sessions. They keep a record of recent events (working memory) as well as long-term memories, allowing them to recall and learn from past actions.
+
+Semantic Understanding:
+The agents use semantic memory modules to extract and store contextually relevant information. This means they don’t just remember facts—they understand relationships, similar to how our brains abstract important details from our experiences.
+
+Evolving Behavior:
+By continuously ingesting new information and updating their memories, SwiftAgent agents evolve over time. They adapt their responses based on previous interactions, much like how people refine their opinions and strategies with experience.
+
+Reflective Reasoning
+Step-by-Step Thought Processes:
+SwiftAgent’s reasoning engines (like the SalientMemoryReasoning module) simulate a reflective, chain-of-thought process. Instead of providing a one-shot answer, the agent iteratively refines its response, mimicking how humans deliberate before concluding.
+
+Selective Memory Storage:
+Not all thoughts are preserved—agents only store key actions and final responses, much like how humans remember only the highlights of a conversation or decision-making process.
+
+Contextual Awareness:
+When facing a new task, an agent can recall relevant past experiences from its memory. This ability to integrate past knowledge with current context creates a more “human” and personalized interaction.
+
+Collaborative & Social Interaction
+Multi-Agent Communication:
+SwiftAgent supports scenarios where multiple agents work together, sharing information and coordinating tasks. This collaboration mirrors how teams of humans interact, delegate tasks, and build on each other’s ideas.
+
+Dynamic Personality:
+Each agent can be seen as having its own “personality” through its instructions, action sets, and memory configurations. Over time, their behavior becomes tailored by their unique experiences—much like how individuals develop unique traits based on their life history.
 
 ## Installation
 
