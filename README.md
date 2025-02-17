@@ -15,9 +15,9 @@
 ## Table of contents
 
 - [What is SwiftAgent?](#what-is-swiftagent)
-
 - [Installation](#installation)
 - [Getting Started](#getting-started)
+- [Anthropomorphism]
 - [Key Concepts](#key-concepts)
   - [Agents]
   - [Actions]
@@ -25,39 +25,13 @@
   - [Suites]
 - [Comparisons](#comparisons)
 
-
-
 ## What is SwiftAgent?
-In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research — they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into a reality. SwiftAgent provides developers with an out-of-the-box, production-ready infrastructure that meets the demands of modern enterprise environments, ensuring high performance and seamless integration from concept to deployment.
+In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research — they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into a reality. 
 
-**Human-Like Memory & Learning**
+SwiftAgent is a framework for building anthropomorphic (humanlike) agents that are easy to prototype and production-ready from day one, moving agents beyond experimental research and into everyday development for scalable, real-world applications. 
 
-**Persistent Memory:**
-Just like humans remember past experiences, SwiftAgent’s agents store their interactions across sessions. They keep a record of recent events (working memory) as well as long-term memories, allowing them to recall and learn from past actions.
-
-**Semantic Understanding:**
-Our agents use semantic memory modules to extract and store contextually relevant information. This means they don’t just remember facts—they understand relationships, similar to how our brains abstract important details from our experiences.
-
-**Evolving Behavior:**
-By continuously ingesting new information and updating their memories, SwiftAgent agents evolve over time. They adapt their responses based on previous interactions, much like how people refine their opinions and strategies with experience.
-
-**Reflective Reasoning**
-Step-by-Step Thought Processes:
-SwiftAgent’s reasoning engines (like the SalientMemoryReasoning module) simulate a reflective, chain-of-thought process. Instead of providing a one-shot answer, the agent iteratively refines its response, mimicking how humans deliberate before concluding.
-
-**Selective Memory Storage:**
-Not all interactions are preserved — agents only store key actions and final responses, much like how humans remember only the highlights of a conversation or decision-making process.
-
-**Contextual Awareness:**
-When facing a new task, an agent can recall relevant past experiences from its memory. This ability to integrate past knowledge with current context creates a more “human” and personalized interaction.
-
-**Collaborative & Social Interaction**
-
-**Multi-Agent Communication:**
-SwiftAgent supports scenarios where multiple agents work together, sharing information and coordinating tasks. This collaboration mirrors how teams of humans interact, delegate tasks, and build on each other’s ideas.
-
-**Dynamic Personality:**
-Each agent can be seen as having its own “personality” through its instructions, action sets, and memory configurations. Over time, their behavior becomes tailored by their unique experiences, just like how individuals develop unique traits based on their life history.
+> [!NOTE]  
+> 🦅 **SwiftAgent**</span> is part of OpenMinder Labs’ larger vision of the Internet of Agents, where agents are commodified and become as universal as websites.
 
 ## Installation
 
@@ -114,41 +88,31 @@ asyncio.run(main())
 
 ## Key Concepts
 
-### Agents
+### 📃 Agents
 
 SwiftAgent's core is the *agent*—an autonomous unit designed to reason, act, and learn. Each agent is stateful and persistent, storing its own memory, action registry, and reasoning parameters. This makes them inherently “human-like” in that they can remember past interactions and adapt over time.
 
-## Actions
-Actions are the building blocks of an agent’s functionality. You can:
+## 📚 Actions
+Actions are the fundamental building blocks that empower agents to interact with the external world. Much like how humans use tools and skills to accomplish tasks, Actions give agents the ability to execute specific operations—from simple data retrieval to complex API integrations. Actions transform agents from passive chatbots into proactive problem solvers. 
 
-Decorate Functions: Register them as actions with clear descriptions and parameter metadata.
-Group Actions: Use action sets to bundle related functionalities (e.g., finance actions, search tools).
+## 🧠 Memory 
+SwiftAgent is the first framework that takes inspiration from how human brains process and store information. Modulating biomimicry, we feature two main memory components:
 
-## Memory & Persistence
-SwiftAgent is the first framework where agents come equipped with:
+1. **Episodic Memory** - This system handles experience-based memories, similar to how humans remember specific events and situations:
+    - *Working Memory*: Like our ability to hold and manipulate immediate information
+    - *Long-term Memory*: Stores past experiences and interactions over time
 
-Working Memory: For short-term storage and immediate context.
-Long-Term Memory: Persistently stores important interactions, actions, and insights.
-Semantic Memory: Uses vector storage (e.g., ChromaDB) to recall contextually relevant information.
-Persistent Profiles: AgentRegistry ensures that all agent configurations, actions, and memories are saved and reloaded seamlessly.
+2. **Semantic Memory** - This system mirrors how humans store factual knowledge and general understanding about the world, independent of specific experiences. It's like our mental database of concepts, facts, and general knowledge.
 
-## Multi-Agent Collaboration
-Complex tasks often require multiple agents. SwiftAgent supports:
-
-Tiered Execution Pipelines: Using the SwiftRouter and SwiftExecutor, agents can execute tasks in parallel or sequentially, passing outputs between tiers.
-Hosted Mode via SwiftSuite: Agents and clients can interact in real time over websockets, enabling rich, distributed workflows.
-
-## Reasoning & Orchestration
-At the heart of every agent is its reasoning engine. SwiftAgent provides:
-
-BaseReasoning: A fundamental LLM-driven reasoning module.
-SalientMemoryReasoning: A specialized variant that retains only essential tool calls and final responses, reducing noise while preserving key insights.
-LLM Integration: Out-of-the-box support for OpenAI’s API (and other LLM adapters) to power dynamic, multi-step reasoning.
+## Multi-Agent Systems
+SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork between agents. Unlike most frameworks, SwiftAgent treats multi-agent interactions as a first-class citizen, mirroring how humans organize into teams, departments, and organizations to solve complex problems. Currently, only hierarchical collaboration (preset subdivisions) is supported, but support for dynamic collaboration (in the moment divisions and allocations) is coming soon!
 
 
 ## How SwiftAgent Compares
 
 
+## Documentation
+Refer to our [Documentation](https://docs.openminder.ai) for a more comprehensive view of the framework.
 
 ## Contributing
 
