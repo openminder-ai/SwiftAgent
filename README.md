@@ -19,9 +19,9 @@
 - [Getting Started](#getting-started)
 - [Anthropomorphism]
 - [Key Concepts](#key-concepts)
-  - [Agents]
-  - [Actions]
-  - [Memory]
+  - [Agents](#agents)
+  - [Actions](#actions)
+  - [Memory](#memory)
   - [Suites]
 - [Comparisons](#comparisons)
 
