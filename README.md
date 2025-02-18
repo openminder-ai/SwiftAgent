@@ -145,9 +145,9 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 
 OpenMinder's(swiftagent?) advantage: Swiftagent eliminates cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain. <ugh this kinda weird>
 
-* **langchain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state managemtn. This excessive complexity hinders flexibility and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
+* **LangChain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state managemtn. This excessive complexity hinders flexibility and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
 
-* Autogen - Autogen lacks in built-in process management and requires additional coding for orchestration, which doesn't scale efficiently. This approach is memory-intensive and has limited out-of-the-box applicability for larger-scale scenarios.
+* **Autogen** - Autogen lacks in built-in process management and requires additional coding for orchestration, which doesn't scale efficiently. This approach is memory-intensive and has limited out-of-the-box applicability for larger-scale scenarios.
 
 * **CrewAI** - CrewAI focuses on orchestrating agents through “Crews and Flows,” but its architecture can be complex to fully leverage. Setup is challenging, and its enterprise cloud option may feel clunky for smaller-scale use. Customization for production workflows often demands significant effort.
 
