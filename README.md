@@ -143,21 +143,29 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 ## How SwiftAgent Compares
 @leanne fix this make it proper
 
-langchain - super complex, super hard to setup, no flexibility, memory inefficient, not really production scale (like u need to manually make into server using fastapi or smth)
+OpenMinder's(swiftagent?) advantage: Swiftagent eliminates cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain. <ugh this kinda weird>
 
-autogen - super complex, memory ineffeicient, not really production scale (like u need to manually make into server using fastapi or smth)
+* **langchain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state managemtn. This excessive complexity hinders flexibility and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
 
-crewai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth) - they offer a crewai cloud but its clunky and u need to be an enterprise
+* Autogen - Autogen lacks in built-in process management and requires additional coding for orchestration, which doesn't scale efficiently. This approach is memory-intensive and has limited out-of-the-box applicability for larger-scale scenarios.
+
+* **CrewAI** - CrewAI focuses on orchestrating agents through “Crews and Flows,” but its architecture can be complex to fully leverage. Setup is challenging, and its enterprise cloud option may feel clunky for smaller-scale use. Customization for production workflows often demands significant effort.
+
+toy agents, not really production scale (like u need to manually make into server using fastapi or smth) - they offer a crewai cloud but its clunky and u need to be an enterprise
 , super hard to setup and complex
-agno ai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+
+* **agno ai** - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+
+
+**SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI or AgnoAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to AgnoAI.
 
 we are extremely simple to use, but provide more granular control than crewai or agno ai does
 langchain and autogen provide similar control but its SUPER DUPER COMPLICATED AND SUPER HARD TO USE
 
 also we are incredibly performant efficient (memory usage and speed comparable to agno, which is sota in this, used `memray` for collection)
-performance (with llm as a judge), we are better
+performance (with llm as a judge), we are better <UH what>.
 
-benchmarks coming out soon in coming weeks
+**benchmarks coming out soon in coming weeks**
 
 
 
