@@ -1,5 +1,3 @@
-# SwiftAgent
-
 <div align="center">
 
 ![Logo of Openminder AI](./docs/openminder_logo.jpeg)
