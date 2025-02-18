@@ -6,6 +6,15 @@
 
 <h3> Build scalable & production-ready agents. </h3>
 
+<h4>
+
+[Documentation](https://docs.openminder.ai/) | [Community](discord link here soon)
+
+</h4>
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/openminder-ai/SwiftAgent)](https://github.com/openminder-ai/SwiftAgent)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 </div>
 
 ## Table of contents
