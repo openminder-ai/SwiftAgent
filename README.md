@@ -2,11 +2,9 @@
 
 ![Logo of Openminder AI](./docs/openminder_logo.jpeg)
 
-# **SwiftAgent**
+# 🦅 **SwiftAgent**
 
-🦅 **SwiftAgent**: Build scalable & production-ready agents.
-
-<h3>
+<h3> Build scalable & production-ready agents. </h3>
 
 </div>
 
@@ -17,9 +15,9 @@
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Key Concepts](#key-concepts)
-  - [Agents](#agents)
-  - [Actions](#actions)
-  - [Memory](#memory)
+  - [Agents](#-agents)
+  - [Actions](#-actions)
+  - [Memory](#-memory)
   - [Multi-Agent Systems](#multi-agent-systems)
 - [How SwiftAgent Compares](#how-swiftagent-compares)
 - [Documentation](#documentation)
@@ -119,10 +117,10 @@ asyncio.run(main())
 
 SwiftAgent's core is the *agent*—an autonomous unit designed to reason, act, and learn. Each agent is stateful and persistent, storing its own memory, action registry, and reasoning parameters. This makes them inherently “human-like” in that they can remember past interactions and adapt over time.
 
-## 📚 Actions
+### 📚 Actions
 Actions are the fundamental building blocks that empower agents to interact with the external world. Much like how humans use tools and skills to accomplish tasks, Actions give agents the ability to execute specific operations—from simple data retrieval to complex API integrations. Actions transform agents from passive chatbots into proactive problem solvers. 
 
-## 🧠 Memory 
+### 🧠 Memory 
 SwiftAgent is the first framework that takes inspiration from how human brains process and store information. Modulating biomimicry, we feature two main memory components:
 
 1. **Episodic Memory** - This system handles experience-based memories, similar to how humans remember specific events and situations:
@@ -131,7 +129,7 @@ SwiftAgent is the first framework that takes inspiration from how human brains p
 
 2. **Semantic Memory** - This system mirrors how humans store factual knowledge and general understanding about the world, independent of specific experiences. It's like our mental database of concepts, facts, and general knowledge.
 
-## Multi-Agent Systems
+### Multi-Agent Systems
 SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork between agents. Unlike most frameworks, SwiftAgent treats multi-agent interactions as a first-class citizen, mirroring how humans organize into teams, departments, and organizations to solve complex problems. Currently, only hierarchical collaboration (preset subdivisions) is supported, but support for dynamic collaboration (in the moment divisions and allocations) is coming soon!
 
 
@@ -142,7 +140,7 @@ langchain - super complex, super hard to setup, no flexibility, memory inefficie
 
 autogen - super complex, memory ineffeicient, not really production scale (like u need to manually make into server using fastapi or smth)
 
-crewai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+crewai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth) - they offer a crewai cloud but its clunky and u need to be an enterprise
 , super hard to setup and complex
 agno ai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
 
