@@ -15,23 +15,52 @@
 ## Table of contents
 
 - [What is SwiftAgent?](#what-is-swiftagent)
+- [A different paradigm](#a-different-paradigm)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Anthropomorphism]
 - [Key Concepts](#key-concepts)
   - [Agents](#agents)
   - [Actions](#actions)
   - [Memory](#memory)
-  - [Suites]
-- [Comparisons](#comparisons)
+  - [Multi-Agent Systems](#multi-agent-systems)
+- [How SwiftAgent Compares](#how-swiftagent-compares)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## What is SwiftAgent?
 In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research — they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into a reality. 
 
 SwiftAgent is a framework for building anthropomorphic (humanlike) agents that are easy to prototype and production-ready from day one, moving agents beyond experimental research and into everyday development for scalable, real-world applications. 
 
+SwiftAgent brings the familiarity of web development to AI agent creation. If you've worked with Express.js routes or FastAPI, you'll feel right at home – but instead of building UIs or APIs, you're crafting stateful, human-like AI agents ready for production from day one.
+
+```python
+#example
+@agent.action(description="Analyze market trends")
+async def analyze_market(symbol: str):
+    # Your complex logic here
+    return insights
+```
+
+**If you can build a REST API, you can build an AI agent**
+SwiftAgent adopts the patterns that made web frameworks successful, giving developers instant familiarity:
+
+We've reimagined agent development through web-tested paradigms:
+- Decorator-Driven Design: Annotate capabilities like API endpoints
+- Async-First Architecture: Native support for concurrent operations
+- Component Reusability: Share agents like npm packages (coming soon!)
+- DevTools Ecosystem: CLI, debugger, and hot-reload (coming soon!)
+
+This isn't just another AI toolkit - it's the FastAPI for Agent Development, combining web's accessibility with AI's power.
+
 > [!NOTE]  
 > 🦅 **SwiftAgent**</span> is part of OpenMinder Labs’ larger vision of the Internet of Agents, where agents are commodified and become as universal as websites.
+
+## A different paradigm
+<h3> Agents That Remember. Learn. Evolve. </h3>
+
+SwiftAgent introduces the first true biomimetic architecture in AI frameworks. It reimagines AI agents as cognitive beings rather than code utilities. Where traditional frameworks treat agents as functions to accomplish tasks, we implement stateful continuity – agents retain experiences like humans, evolving their decision-making through layered memory systems (episodic snapshots and semantic knowledge) instead of flat RAG. Actions become intentional behaviors refined through interaction, not isolated API calls. Collaboration mirrors organic teamwork, with agents debating ideas and redistributing roles mid-task, while reasoning adopts neuroplastic principles where frequently used skills strengthen over time. This isn’t just mimicking human traits architecturally; it’s building agents with cognitive fingerprints that learn, forget, and adapt – not because they’re programmed to, but because their design biologically compels them to.
 
 ## Installation
 
@@ -109,6 +138,24 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 
 
 ## How SwiftAgent Compares
+@leanne fix this make it proper
+
+langchain - super complex, super hard to setup, no flexibility, memory inefficient, not really production scale (like u need to manually make into server using fastapi or smth)
+
+autogen - super complex, memory ineffeicient, not really production scale (like u need to manually make into server using fastapi or smth)
+
+crewai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+, super hard to setup and complex
+agno ai - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+
+we are extremely simple to use, but provide more granular control than crewai or agno ai does
+langchain and autogen provide similar control but its SUPER DUPER COMPLICATED AND SUPER HARD TO USE
+
+also we are incredibly performant efficient (memory usage and speed comparable to agno, which is sota in this, used `memray` for collection)
+performance (with llm as a judge), we are better
+
+benchmarks coming out soon in coming weeks
+
 
 
 ## Documentation
