@@ -1,10 +1,6 @@
-<div align="center">
-
-![Logo of Openminder AI](./docs/openminder_logo.jpeg)
-
 # 🦅 **SwiftAgent**
 
-<h3> Build scalable & production-ready agents. </h3>
+<h3> ⚡Build scalable & production-ready agents. ⚡ </h3>
 
 <h4>
 
@@ -12,6 +8,8 @@
 
 </h4>
 
+[![Release Notes](https://img.shields.io/github/release/openminder-ai/SwiftAgent?style=flat-square)](https://github.com/openminder-ai/SwiftAgent/releases)
+[![CI](https://github.com/openminder-ai/SwiftAgent/actions/workflows/check_diffs.yml/badge.svg)](https://github.com/openminder-ai/SwiftAgent/actions/workflows/check_diffs.yml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/openminder-ai/SwiftAgent)](https://github.com/openminder-ai/SwiftAgent)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
