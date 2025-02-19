@@ -93,11 +93,11 @@ async def main_test():
     suite = SwiftSuite(agents=[web_agent, finance_agent, summary_agent])
 
     from pprint import pprint
-    from swiftagent import ApplicationType
+    from swiftagent import RuntimeType
 
     pprint(
         await suite.run(
-            mode=ApplicationType.STANDARD,
+            mode=RuntimeType.STANDARD,
             task="Summarize analyst recommendations and share the latest news for NVDA. Use markdown, including tables.",
         )
     )

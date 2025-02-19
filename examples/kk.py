@@ -1,5 +1,5 @@
 from swiftagent import SwiftAgent
-from swiftagent.application.types import ApplicationType
+from swiftagent.application.types import RuntimeType
 
 # We do NOT set fresh_install, so fresh_install=False => load from disk if found
 agent2 = SwiftAgent(
@@ -19,7 +19,7 @@ import asyncio
 async def main():
     print(agent2.name)  # Should show "WeatherAgentV2" now
     response = await agent2.run(
-        type_=ApplicationType.STANDARD,
+        type_=RuntimeType.STANDARD,
         task="what question did I ask you a couple of seconds ago?",
     )
 

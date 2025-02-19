@@ -1,6 +1,6 @@
 import arxiv, asyncio
 
-from swiftagent import SwiftAgent, ApplicationType
+from swiftagent import SwiftAgent, RuntimeType
 
 
 agent = SwiftAgent(name="PersistentWeatherAgent")
@@ -52,7 +52,7 @@ Abstract:
 
 
 async def main():
-    await agent.run(type_=ApplicationType.PERSISTENT)
+    await agent.run(type_=RuntimeType.PERSISTENT)
 
 
 if __name__ == "__main__":

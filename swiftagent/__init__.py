@@ -2,7 +2,7 @@ from .application.base import (
     SwiftAgent,
 )
 
-from .application.types import ApplicationType
+from .application.types import RuntimeType
 
 from .client import SwiftClient
 

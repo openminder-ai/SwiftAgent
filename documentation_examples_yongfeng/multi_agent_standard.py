@@ -3,7 +3,7 @@ from swiftagent.prebuilt.actions.duckduckgo import duckduckgo_actions
 from swiftagent.prebuilt.actions.yfinance import yfinance_actions
 
 from swiftagent.suite import SwiftSuite
-from swiftagent import ApplicationType
+from swiftagent import RuntimeType
 
 import asyncio
 
@@ -96,7 +96,7 @@ async def main():
 
     print(
         await suite.run(
-            mode=ApplicationType.STANDARD,
+            mode=RuntimeType.STANDARD,
             task="Summarize analyst recommendations and share the latest news for NVDA. Use markdown, including tables.",
         )
     )

@@ -2,7 +2,7 @@ import asyncio
 from functools import wraps
 from typing import Callable, Any, Optional, Type, overload
 from swiftagent.actions.set import ActionSet
-from swiftagent.application.types import ApplicationType
+from swiftagent.application.types import RuntimeType
 from swiftagent.actions.base import Action
 
 
@@ -47,22 +47,31 @@ class SwiftAgent:
         description: str = "An agent that does stuff",
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
-        enable_salient_memory: bool = False,
+        episodic_memory: bool = False,
         llm_name: str = "gpt-4o",
         verbose: bool = True,  # <-- added flag
         persist_path: Optional[str] = None,
-        fresh_install: bool = False,
+        auto_load: bool = False,
+        auto_save: bool = False,
+        working_memory: Optional[WorkingMemory] = None,
+        long_term_memory: Optional[LongTermMemory] = None,
+        semantic_memory_sections: list[SemanticMemory] = [],
     ):
         self.name = name
         self.description = description
         self.instruction = instruction
+
+        if semantic_memory_sections:
+            for memory in semantic_memory_sections:
+                self.add_semantic_memory_section(memory)
 
         # Collections to store actions/resources
         self._actions: dict[str, dict[str, Any]] = {}
         self._resources: dict[str, dict[str, Any]] = {}
 
         self.persist_path = persist_path
-        self.fresh_install = fresh_install
+        self.auto_save = auto_save
+        self.auto_load = auto_load
 
         # We track if the agent is fully loaded or not
         self.loaded_from_registry = False
@@ -82,13 +91,15 @@ class SwiftAgent:
 
         self.semantic_memories: dict[str, SemanticMemory] = {}
 
-        if enable_salient_memory:
+        if episodic_memory:
             self.reasoning = SalientMemoryReasoning(
                 "test_stm", self.instruction
             )
 
             self._create_or_replace_working_memory()
-            self._create_or_replace_long_term_memory(name=f"{self.name}_ltm_db")
+            self._create_or_replace_long_term_memory(
+                name=f"{self.name}_ltm_db", clear=True
+            )
 
         else:
             # fallback to plain BaseReasoning
@@ -98,6 +109,12 @@ class SwiftAgent:
                 name=self.name, instructions=self.instruction
             )
 
+        if episodic_memory and working_memory:
+            self.set_working_memory(working_memory)
+
+        if episodic_memory and long_term_memory:
+            self.set_long_term_memory(long_term_memory)
+
         if self.persist_path:
             _load_path = str(Path(self.persist_path))
         else:
@@ -105,8 +122,7 @@ class SwiftAgent:
 
         self.persist_path = _load_path
 
-        if not self.fresh_install:
-
+        if self.auto_load:
             if os.path.exists(self.persist_path):
                 AgentRegistry.load_agent_profile(self)
                 self.loaded_from_registry = True
@@ -116,19 +132,6 @@ class SwiftAgent:
             else:
                 # no directory yet, that means no existing profile
                 pass
-
-        # if self.persist_path and not self.fresh_install:
-        #     if os.path.exists(self.persist_path):
-        #         AgentRegistry.load_agent_profile(self)
-        #         self.loaded_from_registry = True
-        #         # Now that we've loaded, if "enable_salient_memory" was in the profile,
-        #         # we might already have a working_memory & LTM set up by the loader.
-        #         # If not, they're created above anyway.
-        #     else:
-        #         # no directory yet, that means no existing profile
-        #         pass
-
-        # Done loading if any. The agent is now ready for usage.
 
     ##############################
     # Persistence / Registry Support
@@ -142,6 +145,13 @@ class SwiftAgent:
             # If user didn't specify persist_path, do nothing
             return
         AgentRegistry.save_agent_profile(self)
+
+    def load(self) -> None:
+        if not self.persist_path:
+            return
+
+        AgentRegistry.load_agent_profile(self)
+        self.loaded_from_registry = True
 
     def _print(self, message: str):
         """Helper to safely print only if verbose."""
@@ -167,31 +177,6 @@ class SwiftAgent:
                     pass
 
             return _NoOpCm()
-
-    def _create_or_replace_working_memory(self, max_items=15) -> None:
-        self.working_memory = WorkingMemory(
-            max_items=max_items, auto_evict=True
-        )
-
-        if self.reasoning and isinstance(
-            self.reasoning, SalientMemoryReasoning
-        ):
-            self.reasoning.working_memory = self.working_memory
-
-    def _create_or_replace_long_term_memory(
-        self,
-        name: str = "long_term_memory",
-    ) -> None:
-        """
-        Internal helper that sets a brand-new LongTermMemory on the agent,
-        discarding any older one. (Used by the registry loader.)
-        """
-        new_ltm = LongTermMemory(name=name)
-        self.long_term_memory = new_ltm
-        if self.reasoning and isinstance(
-            self.reasoning, SalientMemoryReasoning
-        ):
-            self.reasoning.long_term_memory = self.long_term_memory
 
     def action(
         self,
@@ -299,6 +284,40 @@ class SwiftAgent:
         self.reasoning.add_semantic_memory_section(semantic_memory_section)
 
         return self
+
+    def set_working_memory(self, mem: WorkingMemory):
+        self.reasoning.working_memory = mem
+
+    def set_long_term_memory(self, mem: LongTermMemory):
+        self.reasoning.long_term_memory = mem
+
+    def _create_or_replace_working_memory(self, max_items=15) -> None:
+        self.working_memory = WorkingMemory(
+            max_items=max_items, auto_evict=True
+        )
+
+        if self.reasoning and isinstance(
+            self.reasoning, SalientMemoryReasoning
+        ):
+            self.reasoning.working_memory = self.working_memory
+
+    def _create_or_replace_long_term_memory(
+        self, name: str, clear: bool = False
+    ) -> None:
+        """
+        Internal helper that sets a brand-new LongTermMemory on the agent,
+        discarding any older one. (Used by the registry loader.)
+        """
+        new_ltm = LongTermMemory(name=name)
+
+        if clear:
+            new_ltm.collection.clear()
+
+        self.long_term_memory = new_ltm
+        if self.reasoning and isinstance(
+            self.reasoning, SalientMemoryReasoning
+        ):
+            self.reasoning.long_term_memory = self.long_term_memory
 
     ##############################
     # Universal Agent Mode
@@ -548,10 +567,10 @@ class SwiftAgent:
 
     async def run(
         self,
-        type_: ApplicationType = ApplicationType.STANDARD,
+        task: str | None = None,
         host: str | None = None,
         port: int | None = None,
-        task: str | None = None,
+        runtime: RuntimeType = RuntimeType.STANDARD,
     ):
         """
         Run the SwiftAgent in either server or public mode.
@@ -565,7 +584,13 @@ class SwiftAgent:
                 For public mode:
                     - websocket_uri: URI of the websocket server
         """
-        if type_ == ApplicationType.STANDARD:
+        if isinstance(runtime, str):
+            try:
+                runtime = RuntimeType[runtime.upper()]
+            except KeyError:
+                raise ValueError(f"Invalid runtime value: {runtime}")
+
+        if runtime == RuntimeType.STANDARD:
             self._print(
                 Panel(
                     f"[info]Query:[/info] {task}",
@@ -587,11 +612,11 @@ class SwiftAgent:
                 )
             )
 
-            # if self.persist_path:
-            #     self.save()
+            if self.auto_save and self.persist_path:
+                self.save()
 
             return result
-        elif type_ == ApplicationType.PERSISTENT:
+        elif runtime == RuntimeType.PERSISTENT:
             # Create app if not exists
             if not self._server:
                 self._server = self._create_server()
@@ -613,7 +638,7 @@ class SwiftAgent:
             server = uvicorn.Server(config)
 
             await server.serve()
-        elif type_ == ApplicationType.HOSTED:
+        elif runtime == RuntimeType.HOSTED:
             connection_task = asyncio.create_task(
                 self._connect_hosted(host, port)
             )
@@ -624,4 +649,4 @@ class SwiftAgent:
             except:
                 connection_task.cancel()
         else:
-            raise ValueError(f"Unknown mode: {type_}")
+            raise ValueError(f"Unknown runtime: {runtime}")

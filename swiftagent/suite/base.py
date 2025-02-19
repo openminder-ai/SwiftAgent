@@ -1,5 +1,5 @@
 from swiftagent.application import SwiftAgent
-from swiftagent.application.types import ApplicationType
+from swiftagent.application.types import RuntimeType
 from swiftagent.core.utilities import hash_url
 import websockets
 
@@ -528,10 +528,10 @@ class SwiftSuite:
         self,
         host: str | None = None,
         port: int | None = None,
-        mode: ApplicationType = ApplicationType.HOSTED,
+        mode: RuntimeType = RuntimeType.HOSTED,
         task: str | None = None,
     ):
-        if mode == ApplicationType.HOSTED:
+        if mode == RuntimeType.HOSTED:
             suite_url = f"{host}{port}"
             hashed_suite_url = hash_url(suite_url)
 
@@ -570,14 +570,12 @@ class SwiftSuite:
             # Launch all "to be joined" agents in Hosted mode
             for agent in self.agents_to_be_joined:
                 asyncio.create_task(
-                    agent.run(
-                        type_=ApplicationType.HOSTED, host=host, port=port
-                    )
+                    agent.run(type_=RuntimeType.HOSTED, host=host, port=port)
                 )
 
             # Keep the server running
             await asyncio.Future()  # run forever
-        elif mode == ApplicationType.STANDARD:
+        elif mode == RuntimeType.STANDARD:
             router = SwiftRouter(agents=[*self.agents_to_be_joined])
 
             response = await router.route(

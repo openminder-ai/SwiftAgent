@@ -1,7 +1,7 @@
 # hosted_suite.py
 import asyncio
 
-from swiftagent import SwiftAgent, ApplicationType
+from swiftagent import SwiftAgent, RuntimeType
 from swiftagent.suite import SwiftSuite
 
 from swiftagent.prebuilt.actions.duckduckgo import duckduckgo_actions
@@ -98,8 +98,8 @@ async def main():
     suite = SwiftSuite(agents=[web_agent, finance_agent, summary_agent])
 
     # Run in HOSTED mode. This starts a WebSocket server at ws://0.0.0.0:8001
-    # plus it launches each agent in "ApplicationType.HOSTED" so they connect to the Suite.
-    await suite.run(host="0.0.0.0", port=8001, mode=ApplicationType.HOSTED)
+    # plus it launches each agent in "RuntimeType.HOSTED" so they connect to the Suite.
+    await suite.run(host="0.0.0.0", port=8001, mode=RuntimeType.HOSTED)
 
 
 if __name__ == "__main__":

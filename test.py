@@ -1,27 +1,28 @@
-from openai import OpenAI
-from dotenv import load_dotenv
+import python_weather, asyncio
 
-load_dotenv()
+from swiftagent import SwiftAgent
 
-client = OpenAI()
+agent = SwiftAgent(
+    name="WeatherAgent",
+    instruction="be conciser and to the point",
+    auto_load=False,
+    auto_save=False,
+    episodic_memory=True,
+)
 
-print("hi")
 
-import time
+@agent.action(description="get weather for a city")
+async def get_weather_for_city(city: str) -> None:
+    async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
+        weather = await client.get(city)
+        return weather.temperature
 
-time.sleep(3)
 
-models = ["gpt-4o"]
-
-messages = [
-    {"role": "system", "content": "Respond in Pirate English."},
-    {"role": "user", "content": "Tell me a joke."},
-]
-
-for model in models:
-    response = client.chat.completions.create(
-        model=model, messages=messages, temperature=0.75
+async def main():
+    await agent.run(
+        task="What is the difference in temperatures in the cities of london and herndon"
     )
-    print(response.choices[0].message.content)
 
-print("bye")
+
+if __name__ == "__main__":
+    asyncio.run(main())

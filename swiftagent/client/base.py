@@ -15,7 +15,7 @@ from rich import box
 
 from swiftagent.styling.defaults import client_cli_default
 
-from swiftagent.application.types import ApplicationType
+from swiftagent.application.types import RuntimeType
 
 
 class SwiftClient:

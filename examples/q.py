@@ -1,7 +1,7 @@
 # Suppose we define a new agent with some actions, want it persistent:
 
 from swiftagent import SwiftAgent
-from swiftagent.application.types import ApplicationType
+from swiftagent.application.types import RuntimeType
 
 agent = SwiftAgent(
     name="WeatherAgentV2",
@@ -26,7 +26,7 @@ import asyncio
 
 async def main():
     response = await agent.run(
-        type_=ApplicationType.STANDARD, task="what is weather in herndon?"
+        type_=RuntimeType.STANDARD, task="what is weather in herndon?"
     )
 
     # The agent is done and has auto-saved into ./my_agents/WeatherAgentV2

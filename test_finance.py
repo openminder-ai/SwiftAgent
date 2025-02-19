@@ -7,10 +7,11 @@ from swiftagent.prebuilt.actions import YFinanceActionSet
 
 
 agent = SwiftAgent(
-    name="Finance1Agent",
+    name="Finance2Agent",
     instruction="Use tables to display data",
-    fresh_install=True,
-    enable_salient_memory=False,
+    auto_load=False,
+    auto_save=False,
+    episodic_memory=True,
 )
 
 agent.add_actionset(YFinanceActionSet)
@@ -19,7 +20,7 @@ import asyncio
 
 
 async def main():
-    await agent.run(task="Summarize analyst recommendations for NVDA")
+    await agent.run(task="Summarize analyst recommendations for Apple")
 
 
 asyncio.run(main())

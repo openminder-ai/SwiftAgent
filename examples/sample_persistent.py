@@ -1,6 +1,6 @@
 import python_weather, asyncio
 
-from swiftagent import SwiftAgent, ApplicationType
+from swiftagent import SwiftAgent, RuntimeType
 
 
 agent = SwiftAgent(name="PersistentWeatherAgent")
@@ -14,7 +14,7 @@ async def get_weather_for_city(city: str) -> None:
 
 
 async def main():
-    await agent.run(type_=ApplicationType.PERSISTENT)
+    await agent.run(type_=RuntimeType.PERSISTENT)
 
 
 if __name__ == "__main__":
