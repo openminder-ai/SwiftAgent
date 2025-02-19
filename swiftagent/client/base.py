@@ -60,9 +60,13 @@ class SwiftClient:
         elif self.mode == ClientConnectionMode.SUITE:
             await self._connect_to_suite()
 
-            response = await self.process_query_ws(agent, query)
+            if agent is None:
+                response = await self.process_multi_agent_query_ws(query)
+            else:
+                response = await self.process_query_ws(agent, query)
 
             await self._close_connection_to_suite()
+
             return response
 
     ##############################
@@ -297,7 +301,6 @@ class SwiftClient:
         Usage:
             result = await client.process_multi_agent_query_ws("some big multi-agent task")
         """
-        await self._connect_to_suite()
 
         request_id = str(uuid.uuid4())
         future = self.loop.create_future()
