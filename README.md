@@ -113,7 +113,7 @@ Agents are asynchronous, allowing for high scalability and performance. To direc
 
 ```python
 async def main():
-    await agent.run('What is the weather in boston?')
+    await weather_agent.run('What is the weather in boston?')
 
 asyncio.run(main())
 ```
