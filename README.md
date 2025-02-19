@@ -142,7 +142,7 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 
 ## How SwiftAgent Compares
 
-Swiftagent's advantage: Swiftagent eliminates the need for cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain.
+Swiftagent's advantage: **Swiftagent** eliminates the need for cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain.
 
 * **LangChain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state management. Its heavy abstraction layer can slow down operations that would be faster with direct API calls. This excessive complexity hinders flexibility, decreases time efficiency, and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments also lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
 
