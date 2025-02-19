@@ -15,15 +15,16 @@ from rich import box
 
 from swiftagent.styling.defaults import client_cli_default
 
-from swiftagent.application.types import RuntimeType
+from swiftagent.application.types import RuntimeType, ClientConnectionMode
 
 
 class SwiftClient:
     def __init__(
         self,
+        mode: ClientConnectionMode = ClientConnectionMode.AGENT,
         host: str = "localhost",
         port: int = 8001,
-        client_name: str = "SwiftClient",
+        name: str = "SwiftClient",
     ):
         """
         Initialize the SwiftClient client.
@@ -41,8 +42,10 @@ class SwiftClient:
         # Keep track of pending requests => Future objects
         # key: request_id => value: Future that we set_result(...) upon receiving the response
         self.pending_ws_requests = {}
-        self.client_name = client_name
+        self.client_name = name
         self.console = Console(theme=client_cli_default)
+
+        self.mode = mode
 
     ##############################
     # Universal
@@ -50,15 +53,14 @@ class SwiftClient:
     async def send(
         self,
         query: str,
-        agent_name: str | None = None,
-        type_: Literal["agent", "suite"] = "agent",
+        agent: str | None = None,
     ):
-        if type_ == "agent":
-            return await self.process_query(query, agent_name)
-        elif type_ == "suite":
+        if self.mode == ClientConnectionMode.AGENT:
+            return await self.process_query(query, agent)
+        elif self.mode == ClientConnectionMode.SUITE:
             await self._connect_to_suite()
 
-            response = await self.process_query_ws(agent_name, query)
+            response = await self.process_query_ws(agent, query)
 
             await self._close_connection_to_suite()
             return response

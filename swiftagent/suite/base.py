@@ -5,7 +5,7 @@ import websockets
 
 from websockets import ServerConnection as WebSocketServerProtocol
 import asyncio
-from typing import Any, Callable
+from typing import Any, Callable, Union
 import json
 
 from rich.console import Console
@@ -528,10 +528,16 @@ class SwiftSuite:
         self,
         host: str | None = None,
         port: int | None = None,
-        mode: RuntimeType = RuntimeType.HOSTED,
+        runtime: Union[RuntimeType, str] = RuntimeType.STANDARD,
         task: str | None = None,
     ):
-        if mode == RuntimeType.HOSTED:
+        if isinstance(runtime, str):
+            try:
+                runtime = RuntimeType[runtime.upper()]
+            except KeyError:
+                raise ValueError(f"Invalid runtime value: {runtime}")
+
+        if runtime == RuntimeType.HOSTED:
             suite_url = f"{host}{port}"
             hashed_suite_url = hash_url(suite_url)
 
@@ -575,7 +581,7 @@ class SwiftSuite:
 
             # Keep the server running
             await asyncio.Future()  # run forever
-        elif mode == RuntimeType.STANDARD:
+        elif runtime == RuntimeType.STANDARD:
             router = SwiftRouter(agents=[*self.agents_to_be_joined])
 
             response = await router.route(

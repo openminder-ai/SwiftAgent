@@ -25,3 +25,18 @@ class RuntimeType(Enum):
 
     def is_standard(self) -> bool:
         return self == RuntimeType.STANDARD
+
+
+class ClientConnectionMode(Enum):
+    AGENT = 0
+    SUITE = 1
+
+    @classmethod
+    def __missing__(cls, value: str) -> "ClientConnectionMode":
+        if isinstance(value, str):
+            try:
+                return cls[value.upper()]
+            except KeyError:
+                pass
+
+        return None
