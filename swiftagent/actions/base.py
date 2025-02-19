@@ -10,7 +10,6 @@ from functools import (
 import inspect
 
 from swiftagent.actions.utils import (
-    # python_type_to_json_type,
     python_type_to_json_schema,
 )
 
