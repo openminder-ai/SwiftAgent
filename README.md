@@ -55,15 +55,15 @@ We've reimagined agent development through web-tested paradigms:
 - Component Reusability: Share agents like npm packages (coming soon!)
 - DevTools Ecosystem: CLI, debugger, and hot-reload (coming soon!)
 
-This isn't just another AI toolkit - it's the FastAPI for Agent Development, combining web's accessibility with AI's power.
+This isn't just another AI toolkit - it's the FastAPI for Agent Development, combining the web's accessibility with AI's power.
 
 > [!NOTE]  
-> 🦅 **SwiftAgent**</span> is part of OpenMinder Labs’ larger vision of the Internet of Agents, where agents are commodified and become as universal as websites.
+> 🦅 **SwiftAgent**</span> is part of OpenMinder Labs’ larger vision of the **Internet of Agents**, where agents are commodified and become as universal as websites.
 
 ## A different paradigm
 <h3> Agents That Remember. Learn. Evolve. </h3>
 
-SwiftAgent introduces the first true biomimetic architecture in AI frameworks. It reimagines AI agents as cognitive beings rather than code utilities. Where traditional frameworks treat agents as functions to accomplish tasks, we implement stateful continuity – agents retain experiences like humans, evolving their decision-making through layered memory systems (episodic snapshots and semantic knowledge) instead of flat RAG. Actions become intentional behaviors refined through interaction, not isolated API calls. Our vision is for collaboration to mirror organic teamwork, with agents debating ideas and redistributing roles mid-task, while reasoning adopts neuroplastic principles where frequently used skills strengthen over time. We don't want to just mimic human traits architecturally; we want to build agents with cognitive fingerprints that learn, forget, and adapt – not because they’re programmed to, but because their design biologically compels them to.
+SwiftAgent introduces the first true biomimetic architecture in AI frameworks. It reimagines AI agents as cognitive beings rather than code utilities. Where traditional frameworks treat agents as functions to accomplish tasks, we implement stateful continuity – agents retain experiences like humans, evolving their decision-making through layered memory systems (episodic snapshots and semantic knowledge) instead of flat RAG. Tools become actions, intentional behaviors refined through interaction, not isolated API calls. Collaboration mirrors organic teamwork, with agents debating ideas and redistributing roles mid-task, and reasoning adopts neuroplastic principles where frequently used skills strengthen over time. This isn’t just mimicking human traits architecturally; it’s building agents with cognitive fingerprints that learn, forget, and adapt – not because they’re programmed to, but because their design biologically compels them to.
 
 ## Installation
 
@@ -77,7 +77,7 @@ Let's build a real-time Weather Agent!
 
 ### Step 1: Install dependencies
 
-We rely on the `python_weather` package to get real time weather for a city, so download it using
+We rely on the `python_weather` package to get real-time weather for a city, so download it using
 
 ```bash
 python -m pip install python_weather
@@ -141,31 +141,22 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 
 
 ## How SwiftAgent Compares
-@leanne fix this make it proper
 
-OpenMinder's(swiftagent?) advantage: Swiftagent eliminates cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain. <ugh this kinda weird>
+Swiftagent's advantage: Swiftagent eliminates the need for cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain.
 
-* **LangChain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state managemtn. This excessive complexity hinders flexibility and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
+* **LangChain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state management. Its heavy abstraction layer can slow down operations that would be faster with direct API calls. This excessive complexity hinders flexibility, decreases time efficiency, and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments also lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
 
-* **Autogen** - Autogen lacks in built-in process management and requires additional coding for orchestration, which doesn't scale efficiently. This approach is memory-intensive and has limited out-of-the-box applicability for larger-scale scenarios.
+* **AutoGen** - AutoGen's flexibility comes at the cost of efficiency. It lacks built-in process management and requires additional coding for orchestration, which doesn't scale efficiently. Furthermore, AutoGen's resource-hungry nature and excess overhead results in a degrading inference speed. Its approach is memory-intensive and has limited out-of-the-box applicability for larger-scale scenarios.
 
-* **CrewAI** - CrewAI focuses on orchestrating agents through “Crews and Flows,” but its architecture can be complex to fully leverage. Setup is challenging, and its enterprise cloud option may feel clunky for smaller-scale use. Customization for production workflows often demands significant effort.
+* **CrewAI** - CrewAI focuses on orchestrating agents through “Crews and Flows,” but its architecture can be complex to fully leverage. Setup is challenging, and its enterprise cloud option may feel clunky for smaller-scale use. Customization for production workflows often demands significant effort. CrewAI's orchestration uses LangChain under the hood, inheriting some of its overhead, resulting in resource bloat and hurting speed and cost efficiency.  
 
-toy agents, not really production scale (like u need to manually make into server using fastapi or smth) - they offer a crewai cloud but its clunky and u need to be an enterprise
-, super hard to setup and complex
-
-* **agno ai** - toy agents, not really production scale (like u need to manually make into server using fastapi or smth)
+* **Agno AI** - Agno AI's speed efficiency affects agent initialization. The speed of the actual task execution is still bottlenecked by LLM inference latency, so end-to-end throughput doesn't always surpass rival frameworks. Large deployments also strain resources and require careful orchestration features that are not provided. 
 
 
-**SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI or AgnoAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to AgnoAI.
+Meanwhile, **SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI or AgnoAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to AgnoAI.
 
-we are extremely simple to use, but provide more granular control than crewai or agno ai does
-langchain and autogen provide similar control but its SUPER DUPER COMPLICATED AND SUPER HARD TO USE
 
-also we are incredibly performant efficient (memory usage and speed comparable to agno, which is sota in this, used `memray` for collection)
-performance (with llm as a judge), we are better <UH what>.
-
-**benchmarks coming out soon in coming weeks**
+**Benchmarks coming out soon in the coming weeks**
 
 
 
