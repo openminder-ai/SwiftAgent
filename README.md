@@ -8,6 +8,9 @@
 
 </h4>
 
+> [!IMPORTANT]
+> Documentation is still ongoing
+
 [![Release Notes](https://img.shields.io/github/release/openminder-ai/SwiftAgent?style=flat-square)](https://github.com/openminder-ai/SwiftAgent/releases)
 [![CI](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/openminder-ai/SwiftAgent)](https://github.com/openminder-ai/SwiftAgent)
@@ -150,10 +153,7 @@ Swiftagent's advantage: **Swiftagent** eliminates the need for cumbersome setup 
 
 * **CrewAI** - CrewAI focuses on orchestrating agents through “Crews and Flows,” but its architecture can be complex to fully leverage. Setup is challenging, and its enterprise cloud option may feel clunky for smaller-scale use. Customization for production workflows often demands significant effort. CrewAI's orchestration uses LangChain under the hood, inheriting some of its overhead, resulting in resource bloat and hurting speed and cost efficiency.  
 
-* **Agno AI** - Agno AI's speed efficiency affects agent initialization. The speed of the actual task execution is still bottlenecked by LLM inference latency, so end-to-end throughput doesn't always surpass rival frameworks. Large deployments also strain resources and require careful orchestration features that are not provided. 
-
-
-Meanwhile, **SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI or AgnoAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to AgnoAI.
+Meanwhile, **SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to Agno AI (~10,000x faster than LangGraph and ~50x less memory than LangGraph).
 
 
 **Benchmarks coming out soon in the coming weeks!**
@@ -162,6 +162,9 @@ Meanwhile, **SwiftAgent** is straightforward and simple to use while still provi
 
 ## Documentation
 Refer to our [Documentation](https://docs.openminder.ai) for a more comprehensive view of the framework.
+
+> [!IMPORTANT]
+> Documentation is still ongoing
 
 ## Contributing
 
