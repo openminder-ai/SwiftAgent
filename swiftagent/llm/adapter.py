@@ -1,8 +1,8 @@
-# from litellm import (
-#     acompletion,
-# )
+from litellm import (
+    acompletion,
+)
 
-from openai import AsyncOpenAI
+# from openai import AsyncOpenAI
 
 from dotenv import load_dotenv
 
@@ -16,9 +16,9 @@ class LLMAdapter:
         *args,
         **kwargs,
     ):
-        # return await acompletion(
-        #     *args,
-        #     **kwargs,
-        # )
-        async with AsyncOpenAI() as client:
-            return await client.chat.completions.create(*args, **kwargs)
+        return await acompletion(
+            *args,
+            **kwargs,
+        )
+        # async with AsyncOpenAI() as client:
+        #     return await client.chat.completions.create(*args, **kwargs)

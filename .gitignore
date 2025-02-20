@@ -21,3 +21,6 @@ chrome_ltm
 example_venv
 
 legacy
+
+.pytest_cache
+.coverage
