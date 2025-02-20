@@ -526,10 +526,10 @@ class SwiftSuite:
 
     async def run(
         self,
+        task: str | None = None,
         host: str | None = None,
         port: int | None = None,
         runtime: Union[RuntimeType, str] = RuntimeType.STANDARD,
-        task: str | None = None,
     ):
         if isinstance(runtime, str):
             try:

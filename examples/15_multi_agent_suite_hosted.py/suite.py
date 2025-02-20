@@ -6,16 +6,7 @@ extract_agent = SwiftAgent(name='ExtractAgent', description='really good at extr
 
 suite = SwiftSuite(agents=[math_agent, extract_agent])
 
-
 async def main():
-    print(
-        await suite.run("""
-        Solve the following word problem:
-
-        Emma is organizing a class party. She buys 5 packs of paper plates for $4 each, 3 packs of plastic cups \
-        for $4 each, 3 packs of plastic cups for $3 each, and a large pizza for $20. She splits the \ 
-        total cost equally among herself and 6 friends. How much does each person pay? 
-        """)
-    )
+    await suite.run(runtime='hosted', host="localhost", port=8001)
 
 asyncio.run(main())

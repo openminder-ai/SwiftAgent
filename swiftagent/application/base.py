@@ -570,7 +570,7 @@ class SwiftAgent:
         task: str | None = None,
         host: str | None = None,
         port: int | None = None,
-        runtime: RuntimeType = RuntimeType.STANDARD,
+        runtime: RuntimeType | str = RuntimeType.STANDARD,
     ):
         """
         Run the SwiftAgent in either server or public mode.
