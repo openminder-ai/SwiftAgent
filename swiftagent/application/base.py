@@ -153,6 +153,8 @@ class SwiftAgent:
         AgentRegistry.load_agent_profile(self)
         self.loaded_from_registry = True
 
+        return self
+
     def _print(self, message: str):
         """Helper to safely print only if verbose."""
         if self.verbose and self.console:
