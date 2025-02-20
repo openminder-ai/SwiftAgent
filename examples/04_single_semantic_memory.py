@@ -10,14 +10,18 @@ my_sem_store = SemanticMemory(name="MyFactsDB")
 agent = SwiftAgent(
     name="FactAgent",
     description="Agent that can recall facts from semantic memory",
-    semantic_memory_sections=[my_sem_store]  # single store
+    semantic_memory_sections=[my_sem_store],  # single store
 )
 
 # 3. Ingest some data into the semantic memory
-my_sem_store.ingest("SwiftAgent is a framework for building AI agents in Python.")
+my_sem_store.ingest(
+    "SwiftAgent is a framework for building AI agents in Python."
+)
 my_sem_store.ingest("The capital of France is Paris.")
+
 
 async def main():
     await agent.run("What is SwiftAgent?")
+
 
 asyncio.run(main())

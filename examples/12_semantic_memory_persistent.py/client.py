@@ -17,10 +17,10 @@ async def example_usage():
         content="The quick brown fox jumps over the lazy dog.",
     )
 
-
     await client.send(
         "what the did the fox jump over? and was the fox quick or slow?",
         "PersistentWeatherAgent",
     )
+
 
 asyncio.run(example_usage())
