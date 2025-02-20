@@ -1,7 +1,3 @@
-Below is a sample **CONTRIBUTING.md** that you can place at the root of your repository (alongside `README.md` and `LICENSE`). This document outlines how to set up a local development environment, run tests, manage formatting/linting with pre-commit, and submit pull requests. Following it, you’ll find brief GitHub instructions for creating this file, using branches, and opening pull requests.
-
----
-
 # Contributing to SwiftAgent
 
 Thank you for your interest in contributing to SwiftAgent! We welcome all kinds of contributions—bug reports, bug fixes, new features, improved documentation, and more.
@@ -17,7 +13,6 @@ Thank you for your interest in contributing to SwiftAgent! We welcome all kinds 
    - [Testing](#testing)  
    - [Pre-commit Hooks](#pre-commit-hooks)  
 4. [Pull Request Guidelines](#pull-request-guidelines)  
-5. [Additional Notes](#additional-notes)  
 
 ---
 
