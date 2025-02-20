@@ -14,7 +14,9 @@ class SwiftExecutor:
             {}
         )  # This will store outputs keyed by each agent's unique_id
 
-    async def execute_pipeline(self, router_output: "RouterOutput") -> dict:
+    async def execute_pipeline(
+        self, router_output: "RouterOutput", return_all: bool = False
+    ) -> dict:
         """
         Execute the pipeline of agent tasks. Tasks in the same tier run concurrently.
 
@@ -30,7 +32,28 @@ class SwiftExecutor:
                 tasks.append(asyncio.create_task(self.execute_task(task)))
             # Wait for all tasks in the current tier to finish before moving to the next tier
             await asyncio.gather(*tasks)
-        return self.outputs
+
+        if return_all:
+            # Return everything from all tiers
+            return self.outputs
+        else:
+            # Return *only* the final tier’s results
+            last_tier_id = max(router_output.tiers.keys())
+            final_tier = router_output.tiers[last_tier_id]
+
+            # Gather outputs for every task in that final tier
+            final_outputs = {}
+            for task in final_tier.tasks:
+                final_outputs[task.unique_id] = self.outputs.get(
+                    task.unique_id, None
+                )
+
+            # If there's exactly one task in the final tier, return just that single string
+            if len(final_outputs) == 1:
+                return list(final_outputs.values())[0]
+            else:
+                # Return a dict of all final-tier tasks
+                return final_outputs
 
     async def execute_task(self, task: "Task") -> str:
         """

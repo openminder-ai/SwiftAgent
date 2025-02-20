@@ -80,6 +80,7 @@ class SwiftSuite:
         client_name = self.clients.get(websocket, "UnknownClient")
         query = data.get("query")
         request_id = data.get("request_id")
+        return_all = data.get("return_all", False)
 
         if not query or not request_id:
             await websocket.send(
@@ -104,7 +105,10 @@ class SwiftSuite:
 
         # 2) Now run that pipeline with our new method
         await self.execute_pipeline_ws(
-            pipeline=router_output, request_id=request_id, client_ws=websocket
+            pipeline=router_output,
+            request_id=request_id,
+            client_ws=websocket,
+            return_all=return_all,
         )
 
     def register_handler(
@@ -411,7 +415,11 @@ class SwiftSuite:
             await self.handle_disconnect(dead_ws)
 
     async def execute_pipeline_ws(
-        self, pipeline: RouterOutput, request_id: str, client_ws: Any
+        self,
+        pipeline: RouterOutput,
+        request_id: str,
+        client_ws: Any,
+        return_all: bool = False,
     ):
         """
         Execute a multi-tier pipeline via websockets.
@@ -509,9 +517,31 @@ class SwiftSuite:
         # After all tiers are complete, you decide how to combine final results:
         # Option A: Suppose the last tier has a single aggregator => return that output
         # Option B: Return everything. For demonstration, we just pass them all back
-        final_output = {}
-        for k, v in all_task_outputs.items():
-            final_output[k] = v
+        # Overwrite - Now doing Option A :)
+        # final_output = {}
+        # for k, v in all_task_outputs.items():
+        #     final_output[k] = v
+
+        if return_all:
+            # Return everything from all tiers
+            final_output = all_task_outputs
+        else:
+            # Return *only* the final tier’s results
+            last_tier_id = max(pipeline.tiers.keys())
+            final_tier = pipeline.tiers[last_tier_id]
+
+            final_result_dict = {}
+            for t in final_tier.tasks:
+                final_result_dict[t.unique_id] = all_task_outputs.get(
+                    t.unique_id, ""
+                )
+
+            if len(final_result_dict) == 1:
+                # only one final task => return the string
+                final_output = list(final_result_dict.values())[0]
+            else:
+                # multiple final tasks => return dict of them
+                final_output = final_result_dict
 
         # Send a single response back to the client
         await client_ws.send(
@@ -530,6 +560,7 @@ class SwiftSuite:
         host: str | None = None,
         port: int | None = None,
         runtime: Union[RuntimeType, str] = RuntimeType.STANDARD,
+        return_all: bool = False,
     ):
         if isinstance(runtime, str):
             try:
@@ -595,6 +626,8 @@ class SwiftSuite:
 
             executor = SwiftExecutor(agent_dict)
 
-            _response = await executor.execute_pipeline(response)
+            _response = await executor.execute_pipeline(
+                response, return_all=return_all
+            )
 
             return _response

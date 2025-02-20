@@ -54,6 +54,7 @@ class SwiftClient:
         self,
         query: str,
         agent: str | None = None,
+        return_all: bool = False,
     ):
         if self.mode == ClientConnectionMode.AGENT:
             return await self.process_query(query, agent)
@@ -61,7 +62,9 @@ class SwiftClient:
             await self._connect_to_suite()
 
             if agent is None:
-                response = await self.process_multi_agent_query_ws(query)
+                response = await self.process_multi_agent_query_ws(
+                    query, return_all
+                )
             else:
                 response = await self.process_query_ws(agent, query)
 
@@ -293,7 +296,9 @@ class SwiftClient:
         except Exception as e:
             self.console.print(f"[error]Error in _listen_to_suite: {e}[/error]")
 
-    async def process_multi_agent_query_ws(self, query: str) -> dict:
+    async def process_multi_agent_query_ws(
+        self, query: str, return_all=False
+    ) -> dict:
         """
         Send a multi-agent pipeline query to SwiftSuite.
         Returns the final dictionary (the aggregated pipeline results).
@@ -320,6 +325,7 @@ class SwiftClient:
             message_type="client_multi_agent_query",
             request_id=request_id,
             query=query,
+            return_all=return_all,
         )
 
         # Wait for final pipeline response

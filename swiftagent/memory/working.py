@@ -80,7 +80,7 @@ class WorkingMemory(Memory):
         automatically tagging it with a local-time timestamp.
         """
         # Generate local-time timestamp in "hh:mm:ss dd/mm/yy"
-        local_timestamp = datetime.now().strftime("%H:%M:%S %d/%m/%y")
+        local_timestamp = datetime.now().strftime("%H:%M:%S %m/%d/%y")
 
         item = MemoryItem(
             item_type=item_type,

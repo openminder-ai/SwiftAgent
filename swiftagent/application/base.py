@@ -61,9 +61,7 @@ class SwiftAgent:
         self.description = description
         self.instruction = instruction
 
-        if semantic_memory_sections:
-            for memory in semantic_memory_sections:
-                self.add_semantic_memory_section(memory)
+        self.semantic_memories: dict[str, SemanticMemory] = {}
 
         # Collections to store actions/resources
         self._actions: dict[str, dict[str, Any]] = {}
@@ -83,8 +81,6 @@ class SwiftAgent:
 
         # If verbose, attach a console for Rich printing. Otherwise None.
         self.console = Console(theme=client_cli_default) if verbose else None
-
-        self.semantic_memories: dict[str, SemanticMemory] = {}
 
         if episodic_memory:
             self.reasoning = SalientMemoryReasoning(
@@ -116,6 +112,10 @@ class SwiftAgent:
             _load_path = str(CACHE_DIR / f"{self.name}")
 
         self.persist_path = _load_path
+
+        if semantic_memory_sections:
+            for memory in semantic_memory_sections:
+                self.add_semantic_memory_section(memory)
 
         if auto_load:
             if os.path.exists(self.persist_path):

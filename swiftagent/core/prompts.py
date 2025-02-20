@@ -28,6 +28,9 @@ Your response should always be a valid JSON object following this schema:
 }
 ```
 
+Make sure to pass any relevant information in the context to instruction as well. Like \
+don't say "this word problem", actually add the word problem itself to the instruction.
+
 # Key Rules
 
 1. TIER ORDERING:

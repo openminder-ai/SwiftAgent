@@ -100,8 +100,11 @@ class SalientMemoryReasoning(BaseReasoning):
         available_tools_str = self.formatter.format_actions(
             list(self.actions.values())
         )
-        system_message = f"""You are an AI agent named Bob.
+        system_message = f"""You are an AI agent.
 Your instructions: {self.instructions or '(no instructions)'}
+
+Timestamps are in "hh:mm:ss mm/dd/yy format!
+
 You have these tools available:
 {available_tools_str}
 
