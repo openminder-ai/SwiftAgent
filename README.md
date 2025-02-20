@@ -9,8 +9,7 @@
 </h4>
 
 > [!IMPORTANT]
-> Documentation is still ongoing
-> Swiftagent is still under active development
+> *SwiftAgent* is currently under active development so frequent changes may be made
 
 [![Release Notes](https://img.shields.io/github/release/openminder-ai/SwiftAgent?style=flat-square)](https://github.com/openminder-ai/SwiftAgent/releases)
 [![CI](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml)
