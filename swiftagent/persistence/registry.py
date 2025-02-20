@@ -30,9 +30,13 @@ class AgentRegistry:
             "description": agent.description,
             "instruction": agent.instruction,
             "llm_name": agent.llm_name,
-            "enable_salient_memory": bool(
+            "episodic_memory": bool(
                 agent.working_memory and agent.long_term_memory
             ),
+            # Add custom
+            "auto_save": agent.auto_save,
+            "auto_load": agent.auto_load,
+            "verbose": agent.verbose,
         }
         with open(
             os.path.join(agent.persist_path, "agent_profile.json"),
@@ -146,9 +150,16 @@ class AgentRegistry:
         agent.description = data["description"]
         agent.instruction = data["instruction"]
         agent.llm_name = data["llm_name"]
-        enable_salient = data.get("enable_salient_memory", False)
+        episodic_memory = data.get("episodic_memory", False)
 
-        if enable_salient:
+        if "auto_save" in data:
+            agent.auto_save = data["auto_save"]
+        if "auto_load" in data:
+            agent.auto_load = data["auto_load"]
+        if "verbose" in data:
+            agent.verbose = data["verbose"]
+
+        if episodic_memory:
             from swiftagent.reasoning.salient import SalientMemoryReasoning
 
             agent.reasoning = SalientMemoryReasoning(

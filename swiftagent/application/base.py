@@ -70,8 +70,6 @@ class SwiftAgent:
         self._resources: dict[str, dict[str, Any]] = {}
 
         self.persist_path = persist_path
-        self.auto_save = auto_save
-        self.auto_load = auto_load
 
         # We track if the agent is fully loaded or not
         self.loaded_from_registry = False
@@ -82,9 +80,6 @@ class SwiftAgent:
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
         self.suite_connection: Optional[WebSocketServerProtocol] = None
-
-        # Agent-wide verbosity toggle
-        self.verbose = verbose
 
         # If verbose, attach a console for Rich printing. Otherwise None.
         self.console = Console(theme=client_cli_default) if verbose else None
@@ -122,7 +117,7 @@ class SwiftAgent:
 
         self.persist_path = _load_path
 
-        if self.auto_load:
+        if auto_load:
             if os.path.exists(self.persist_path):
                 AgentRegistry.load_agent_profile(self)
                 self.loaded_from_registry = True
@@ -132,6 +127,11 @@ class SwiftAgent:
             else:
                 # no directory yet, that means no existing profile
                 pass
+
+        # Agent-wide verbosity toggle
+        self.verbose = verbose
+        self.auto_save = auto_save
+        self.auto_load = auto_load
 
     ##############################
     # Persistence / Registry Support
