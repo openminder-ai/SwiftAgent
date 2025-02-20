@@ -4,7 +4,7 @@
 
 <h4>
 
-[Documentation](https://docs.openminder.ai/) | [Community](https://discord.gg/TseVHQC6e4)
+[Documentation](https://docs.openminder.ai/) | [⚡JOIN THE COMMUNITY](https://discord.gg/TseVHQC6e4)
 
 </h4>
 
