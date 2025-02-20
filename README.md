@@ -63,7 +63,7 @@ This isn't just another AI toolkit - it's the FastAPI for Agent Development, com
 ## A different paradigm
 <h3> Agents That Remember. Learn. Evolve. </h3>
 
-SwiftAgent introduces the first true biomimetic architecture in AI frameworks. It reimagines AI agents as cognitive beings rather than code utilities. Where traditional frameworks treat agents as functions to accomplish tasks, we implement stateful continuity – agents retain experiences like humans, evolving their decision-making through layered memory systems (episodic snapshots and semantic knowledge) instead of flat RAG. Tools become actions, intentional behaviors refined through interaction, not isolated API calls. Collaboration mirrors organic teamwork, with agents debating ideas and redistributing roles mid-task, and reasoning adopts neuroplastic principles where frequently used skills strengthen over time. This isn’t just mimicking human traits architecturally; it’s building agents with cognitive fingerprints that learn, forget, and adapt – not because they’re programmed to, but because their design biologically compels them to.
+SwiftAgent introduces the first true biomimetic architecture in AI frameworks. SwiftAgent aims to reimagine AI agents as cognitive beings rather than code utilities. Where traditional frameworks treat agents as functions to accomplish tasks, we work to implement stateful continuity – agents retain experiences like humans, evolving their decision-making through layered memory systems (episodic snapshots and semantic knowledge) instead of flat RAG. Tools become actions, intentional behaviors refined through interaction, not isolated API calls. We envision collaboration to mirror organic teamwork, with agents debating ideas and redistributing roles mid-task, and reasoning adopts neuroplastic principles where frequently used skills strengthen over time. This isn’t just mimicking human traits architecturally; it’s building agents with cognitive fingerprints that learn, forget, and adapt – not because they’re programmed to, but because their design biologically compels them to.
 
 ## Installation
 
@@ -156,7 +156,7 @@ Swiftagent's advantage: **Swiftagent** eliminates the need for cumbersome setup 
 Meanwhile, **SwiftAgent** is straightforward and simple to use while still providing more granular control than CrewAI or AgnoAI. While LangChain and Autogen provide similar levels of control, implementation is excessively complicated and difficult. Unlike our competitors, we are incredibly performance-efficient, with memory usage and speed comparable to AgnoAI.
 
 
-**Benchmarks coming out soon in the coming weeks**
+**Benchmarks coming out soon in the coming weeks!**
 
 
 
