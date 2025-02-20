@@ -4,12 +4,13 @@
 
 <h4>
 
-[Documentation](https://docs.openminder.ai/) | [⚡JOIN THE COMMUNITY](https://discord.gg/TseVHQC6e4)
+[Documentation](https://docs.openminder.ai/) | [🔥JOIN THE COMMUNITY🔥](https://discord.gg/TseVHQC6e4)
 
 </h4>
 
 > [!IMPORTANT]
 > Documentation is still ongoing
+> Swiftagent is still under active development
 
 [![Release Notes](https://img.shields.io/github/release/openminder-ai/SwiftAgent?style=flat-square)](https://github.com/openminder-ai/SwiftAgent/releases)
 [![CI](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/openminder-ai/SwiftAgent/actions/workflows/ci.yml)
@@ -39,7 +40,14 @@ In today’s rapidly evolving tech landscape, AI agents have moved far beyond ex
 
 SwiftAgent is a framework for building anthropomorphic (humanlike) agents that are easy to prototype and production-ready from day one, moving agents beyond experimental research and into everyday development for scalable, real-world applications. 
 
-SwiftAgent brings the familiarity of web development to AI agent creation. If you've worked with Express.js routes or FastAPI, you'll feel right at home – but instead of building UIs or APIs, you're crafting stateful, human-like AI agents ready for production from day one.
+Unlike other agent frameworks, SwiftAgent is...
+* anthropomorphic, mimicking human psychology 
+* the first to be temporally aware
+* fully persistent, not just limited to memories
+* extremely simple to use but still completely customizable
+* fast to start and built for production
+
+SwiftAgent brings the familiarity of web development to AI agent creation. If you've worked with Express.js routes or FastAPI, you'll feel right at home – but instead of building UIs or APIs, you're crafting stateful, human-like AI agents ready for production from day one. 
 
 ```python
 #example
@@ -145,7 +153,7 @@ SwiftAgent revolutionizes collaborative AI by enabling true emergent teamwork be
 
 ## How SwiftAgent Compares
 
-Swiftagent's advantage: **Swiftagent** eliminates the need for cumbersome setup and complex configurations while delivering production-grade control and performance by mimicking the unique inner workings of the human brain.
+Swiftagent's advantage: By mimicking the unique inner workings of the human brain, **Swiftagent** eliminates the need for cumbersome setup and complex configurations while delivering production-grade control and performance.
 
 * **LangChain** - While LangChain provides the building blocks for agent workflows, it requires significant boilerplate and intricate state management. Its heavy abstraction layer can slow down operations that would be faster with direct API calls. This excessive complexity hinders flexibility, decreases time efficiency, and makes setup difficult, especially when seeking deep custom agent behaviors or unique external integrations. LangChain's deployments also lack production-level efficiency and require manual wrapping into a server (like FastAPI). 
 
