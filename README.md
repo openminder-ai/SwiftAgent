@@ -38,7 +38,7 @@
 ## What is SwiftAgent?
 In today’s rapidly evolving tech landscape, AI agents have moved far beyond experimental research — they are now set to become an integral part of everyday development. Agentic systems are not just about early-stage prototypes; they’re about delivering robust, production-grade solutions that power real-world applications. SwiftAgent is the pioneering, scalable agent framework that transforms this vision into a reality. 
 
-SwiftAgent is a framework for building anthropomorphic (humanlike) agents that are easy to prototype and production-ready from day one, moving agents beyond experimental research and into everyday development for scalable, real-world applications. 
+**SwiftAgent** is a framework for building anthropomorphic (humanlike) agents that are easy to prototype and production-ready from day one, moving agents beyond experimental research and into everyday development for scalable, real-world applications. 
 
 Unlike other agent frameworks, SwiftAgent is...
 * anthropomorphic, mimicking human psychology 
