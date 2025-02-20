@@ -198,7 +198,7 @@ class SwiftAgent:
                 strict=strict,
             )
 
-            self.add_action(name, action)
+            self.add_action(action.name, action)
 
             return action.wrapped_func
 
