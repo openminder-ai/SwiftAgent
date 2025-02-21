@@ -1,6 +1,4 @@
-from swiftagent.llm.adapter import (
-    LLMAdapter,
-)
+from swiftagent.llm import LLM
 
 from swiftagent.actions import (
     Action,
@@ -59,7 +57,7 @@ class BaseReasoning:
         self,
         memory: None = None,
         task: str = "",
-        llm: str = "gpt-4o",
+        llm: LLM = None,
     ):
         system_message = (
             f"You are an AI agent{'.' if self.instructions is None else ', with instructions '+self.instructions} "
@@ -118,7 +116,7 @@ class BaseReasoning:
 
         while not done:
             if len(self.actions) != 0:
-                completion = await LLMAdapter.inference(
+                completion = await llm.inference(
                     model=llm,
                     messages=messages,
                     tools=passable_actions,
@@ -126,7 +124,7 @@ class BaseReasoning:
                     response_format={"type": "json_object"},
                 )
             else:
-                completion = await LLMAdapter.inference(
+                completion = await llm.inference(
                     model=llm,
                     messages=messages,
                     response_format={"type": "json_object"},

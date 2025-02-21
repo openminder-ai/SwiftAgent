@@ -2,7 +2,7 @@ from swiftagent.core.prompts import AGENT_ROUTER_SYSTEM, AGENT_ROUTER_USER
 
 from swiftagent import SwiftAgent
 
-from swiftagent.llm.adapter import LLMAdapter
+from swiftagent.llm.base import LLM
 
 from swiftagent.router.output import RouterOutput
 
@@ -10,8 +10,9 @@ import json
 
 
 class SwiftRouter:
-    def __init__(self, agents=[]):
+    def __init__(self, agents=[], llm: LLM = None):
         self.agents: list[SwiftAgent] = agents
+        self.llm = llm
 
     def add_agents(self, agents: list[SwiftAgent]):
         self.agents.extend(agents)
@@ -21,7 +22,7 @@ class SwiftRouter:
             [f"{agent.name}: {agent.description}" for agent in self.agents]
         )
 
-    async def route(self, query: str, llm: str = "gpt-4o-mini"):
+    async def route(self, query: str):
         _messages = [
             {
                 "role": "system",
@@ -35,8 +36,8 @@ class SwiftRouter:
             },
         ]
 
-        completion = await LLMAdapter.inference(
-            model=llm,
+        completion = await self.llm.inference(
+            model=self.llm,
             messages=_messages,
             response_format={"type": "json_object"},
             max_tokens=4096,

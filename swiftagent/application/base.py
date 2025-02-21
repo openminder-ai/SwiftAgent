@@ -1,6 +1,6 @@
 import asyncio
 from functools import wraps
-from typing import Callable, Any, Optional, Type, overload
+from typing import Callable, Any, Optional, Type, overload, Annotated
 from swiftagent.actions.set import ActionSet
 from swiftagent.application.types import RuntimeType
 from swiftagent.actions.base import Action
@@ -39,6 +39,8 @@ from swiftagent.memory.semantic import SemanticMemory
 
 from swiftagent.persistence.registry import AgentRegistry
 
+from swiftagent.llm import LLM
+
 
 class SwiftAgent:
     def __init__(
@@ -48,7 +50,7 @@ class SwiftAgent:
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
         episodic_memory: bool = False,
-        llm_name: str = "gpt-4o",
+        llm: LLM = lambda: LLM("gpt-4o"),
         verbose: bool = True,  # <-- added flag
         persist_path: Optional[str] = None,
         auto_load: bool = False,
@@ -73,7 +75,9 @@ class SwiftAgent:
         self.loaded_from_registry = False
 
         # self.reasoning = reasoning(name=self.name, instructions=instruction)
-        self.llm_name = llm_name
+        self.llm = (
+            llm() if (callable(llm) and llm.__name__ == "<lambda>") else llm
+        )
 
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
@@ -327,10 +331,7 @@ class SwiftAgent:
 
     async def _process(self, query: str):
         return (
-            await self.reasoning.flow(
-                task=query,
-                llm=self.llm_name,
-            )
+            await self.reasoning.flow(task=query, llm=self.llm)
             # )[-2:]
         )[-1]["content"]
 
