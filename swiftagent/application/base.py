@@ -39,6 +39,8 @@ from swiftagent.memory.semantic import SemanticMemory
 
 from swiftagent.persistence.registry import AgentRegistry
 
+from swiftagent.llm import LLM
+
 
 class SwiftAgent:
     def __init__(
@@ -48,7 +50,7 @@ class SwiftAgent:
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
         episodic_memory: bool = False,
-        llm_name: str = "gpt-4o",
+        llm: Optional[LLM] = None,
         verbose: bool = True,  # <-- added flag
         persist_path: Optional[str] = None,
         auto_load: bool = False,
@@ -73,7 +75,9 @@ class SwiftAgent:
         self.loaded_from_registry = False
 
         # self.reasoning = reasoning(name=self.name, instructions=instruction)
-        self.llm_name = llm_name
+        if llm is None:
+            llm = LLM(name="gpt-4o")
+        self.llm = llm
 
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
@@ -327,10 +331,7 @@ class SwiftAgent:
 
     async def _process(self, query: str):
         return (
-            await self.reasoning.flow(
-                task=query,
-                llm=self.llm_name,
-            )
+            await self.reasoning.flow(task=query, llm=self.llm)
             # )[-2:]
         )[-1]["content"]
 

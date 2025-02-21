@@ -5,7 +5,7 @@ import json
 import inspect
 
 from swiftagent.reasoning.base import BaseReasoning
-from swiftagent.llm.adapter import LLMAdapter
+from swiftagent.llm import LLM
 from swiftagent.actions.formatter import ActionFormatter
 from swiftagent.memory.working import WorkingMemory
 from swiftagent.memory.long_term import LongTermMemory
@@ -33,7 +33,7 @@ class SalientMemoryReasoning(BaseReasoning):
         # self.formatter = ActionFormatter()  # For listing available actions
 
     async def flow(
-        self, task: str = "", llm: str = "gpt-4o-mini", **kwargs
+        self, task: str = "", llm: LLM = None, **kwargs
     ) -> List[dict]:
         """
         This method:
@@ -139,7 +139,7 @@ If is_final=true, the conversation ends.
         while not done:
             # Request LLM with optional tool usage
             if self.actions:
-                completion = await LLMAdapter.inference(
+                completion = await llm.inference(
                     model=llm,
                     messages=messages,
                     tools=passable_actions,
@@ -148,7 +148,7 @@ If is_final=true, the conversation ends.
                 )
             else:
                 # If no actions
-                completion = await LLMAdapter.inference(
+                completion = await llm.inference(
                     model=llm,
                     messages=messages,
                     response_format={"type": "json_object"},

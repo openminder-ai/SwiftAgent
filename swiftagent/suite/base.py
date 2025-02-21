@@ -5,8 +5,10 @@ import websockets
 
 from websockets import ServerConnection as WebSocketServerProtocol
 import asyncio
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional, Union
 import json
+
+from swiftagent.llm import LLM
 
 from rich.console import Console
 from rich.panel import Panel
@@ -25,6 +27,7 @@ class SwiftSuite:
         name: str = "",
         description: str = "",
         agents: list[SwiftAgent] = [],
+        routing_llm: Optional[LLM] = None,
     ):
         self.console = Console(theme=suite_cli_default)
         self.heartbeat_interval = 30
@@ -63,6 +66,11 @@ class SwiftSuite:
             "client_multi_agent_query", self.handle_client_multi_agent_query
         )
 
+        if routing_llm is None:
+            routing_llm = LLM(name="gpt-4o-mini")
+
+        self.routing_llm = routing_llm
+
     ##############################
     # Hosted
     ##############################
@@ -97,10 +105,10 @@ class SwiftSuite:
         from swiftagent.router.base import SwiftRouter
 
         router = SwiftRouter(
-            agents=[*self.agents.values()]
+            agents=[*self.agents.values()], llm=self.routing_llm
         )  # pass actual agent objects
 
-        router_output = await router.route(query=query, llm="gpt-4o-mini")
+        router_output = await router.route(query=query)
         # router_output is a RouterOutput
 
         # 2) Now run that pipeline with our new method

@@ -1,3 +1,3 @@
-from .adapter import (
-    LLMAdapter,
+from .base import (
+    LLM,
 )
