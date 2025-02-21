@@ -1,6 +1,6 @@
 import asyncio
 from functools import wraps
-from typing import Callable, Any, Optional, Type, overload
+from typing import Callable, Any, Optional, Type, overload, Annotated
 from swiftagent.actions.set import ActionSet
 from swiftagent.application.types import RuntimeType
 from swiftagent.actions.base import Action
@@ -50,7 +50,7 @@ class SwiftAgent:
         instruction: Optional[str] = None,
         reasoning: Type[BaseReasoning] = BaseReasoning,
         episodic_memory: bool = False,
-        llm: Optional[LLM] = None,
+        llm: LLM = lambda: LLM("gpt-4o"),
         verbose: bool = True,  # <-- added flag
         persist_path: Optional[str] = None,
         auto_load: bool = False,
@@ -75,9 +75,9 @@ class SwiftAgent:
         self.loaded_from_registry = False
 
         # self.reasoning = reasoning(name=self.name, instructions=instruction)
-        if llm is None:
-            llm = LLM(name="gpt-4o")
-        self.llm = llm
+        self.llm = (
+            llm() if (callable(llm) and llm.__name__ == "<lambda>") else llm
+        )
 
         self._server: Optional[Starlette] = None
         self.last_pong: Optional[float] = None
